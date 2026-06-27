@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff black mypy
+      - run: ruff check src/ tests/
+      - run: black --check src/ tests/
+      - run: mypy src/
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-slim
+        env:
+          POSTGRES_DB: nuhoot_test
+          POSTGRES_USER: nuhoot
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest -x -q --cov=src/nuhoot --cov-report=xml
+        env:
+          DATABASE_URL: postgresql://nuhoot:test@localhost:5432/nuhoot_test
+          REDIS_URL: redis://localhost:6379/0
+      - uses: codecov/codecov-action@v4
+        if: always()
