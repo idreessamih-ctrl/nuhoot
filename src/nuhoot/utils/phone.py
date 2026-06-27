@@ -25,6 +25,15 @@ def normalize_saudi_phone(phone: str) -> str:
     return f"+966 {digits[:2]} {digits[2:5]} {digits[5:]}"
 
 
+def format_phone_for_whatsapp(phone: str) -> str:
+    """Strip a phone number to pure digits for the WhatsApp Cloud API.
+
+    WhatsApp expects the recipient in international format without '+',
+    spaces, or dashes — e.g. ``966501234567``.
+    """
+    return re.sub(r"\D", "", phone)
+
+
 def is_whatsapp_capable(phone: str) -> bool:
     """Check if a phone number can receive WhatsApp messages."""
     try:

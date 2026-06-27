@@ -3,6 +3,8 @@
 from fastapi import FastAPI
 
 from nuhoot.api.routes.businesses import router as businesses_router
+from nuhoot.api.routes.campaigns import router as campaigns_router
+from nuhoot.api.routes.sender import router as sender_router
 
 app = FastAPI(
     title="Nuhoot",
@@ -11,6 +13,8 @@ app = FastAPI(
 )
 
 app.include_router(businesses_router)
+app.include_router(sender_router)
+app.include_router(campaigns_router)
 
 
 @app.get("/health")
