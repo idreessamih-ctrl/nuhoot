@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t('businesses', lang) }}</h1>
+
+<div class="filter-bar">
+    <input type="text" placeholder="{{ t('search', lang) }}">
+    <select>
+        <option value="">{{ t('category', lang) }}: {{ t('all', lang) }}</option>
+        {% for cat in categories %}
+        <option value="{{ cat }}">{{ cat }}</option>
+        {% endfor %}
+    </select>
+    <select>
+        <option value="">{{ t('city', lang) }}: {{ t('all', lang) }}</option>
+        <option value="Riyadh">Riyadh</option>
+        <option value="Jeddah">Jeddah</option>
+        <option value="Mecca">Mecca</option>
+        <option value="Medina">Medina</option>
+        <option value="Dammam">Dammam</option>
+    </select>
+    <select>
+        <option value="">{{ t('status', lang) }}: {{ t('all', lang) }}</option>
+        <option value="found">{{ t('status_found', lang) }}</option>
+        <option value="investigated">{{ t('status_investigated', lang) }}</option>
+        <option value="pitched">{{ t('status_pitched', lang) }}</option>
+        <option value="contacted">{{ t('status_contacted', lang) }}</option>
+        <option value="responded">{{ t('status_responded', lang) }}</option>
+    </select>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ t('name', lang) }}</th>
+                <th>{{ t('category', lang) }}</th>
+                <th>{{ t('phone', lang) }}</th>
+                <th>{{ t('rating', lang) }}</th>
+                <th>{{ t('website', lang) }}</th>
+                <th>{{ t('status', lang) }}</th>
+                <th>{{ t('actions', lang) }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if businesses %}
+            {% for biz in businesses %}
+            <tr>
+                <td>{{ biz.name }}</td>
+                <td>{{ biz.category }}</td>
+                <td>{{ biz.phone or '—' }}</td>
+                <td>{{ ('%.1f' % biz.rating) if biz.rating else '—' }}</td>
+                <td>{{ ('✓' if biz.has_website else '—') }}</td>
+                <td><span class="badge badge-{{ biz.status }}">{{ t('status_' ~ biz.status, lang) }}</span></td>
+                <td>
+                    <a href="/businesses/{{ biz.id }}/investigate" class="btn btn-outline">{{ t('investigate', lang) }}</a>
+                    <a href="/businesses/{{ biz.id }}/craft" class="btn btn-teal">{{ t('craft_pitch', lang) }}</a>
+                    <a href="/businesses/{{ biz.id }}/send" class="btn btn-outline">{{ t('send', lang) }}</a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="7" class="empty">{{ t('no_data', lang) }}</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="/businesses-page?lang={{ lang }}&page={{ page - 1 }}">{{ t('prev', lang) }}</a>
+    {% endif %}
+    <span>{{ t('page', lang) }} {{ page }} {{ t('of', lang) }} {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="/businesses-page?lang={{ lang }}&page={{ page + 1 }}">{{ t('next', lang) }}</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
