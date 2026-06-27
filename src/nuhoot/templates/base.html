@@ -24,9 +24,9 @@
             --red: #f87171;
             --amber: #fbbf24;
             --green: #4ade80;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.2), 0 1px 2px rgba(0,0,0,0.15);
+            --shadow-md: 0 8px 16px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+            --shadow-lg: 0 16px 32px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.25);
             --radius: 0.75rem;
             --radius-sm: 0.5rem;
             --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -56,14 +56,17 @@
             box-shadow: var(--shadow-sm);
         }
         .brand {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--teal), var(--teal-light));
+            background: linear-gradient(135deg, var(--teal-dark), var(--teal-light));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            color: var(--teal);
             text-decoration: none;
             white-space: nowrap;
             letter-spacing: -0.02em;
+            display: inline-block;
         }
         .nav-links { display: flex; gap: 0.15rem; flex: 1; }
         .nav-links a {
@@ -109,19 +112,24 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1.25rem;
+            padding: 1.5rem;
             box-shadow: var(--shadow-sm);
             transition: all var(--transition);
             position: relative;
             overflow: hidden;
         }
-        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); border-color: var(--border-light); }
         .stat-card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
             background: linear-gradient(90deg, var(--teal-dark), var(--teal-light));
         }
+        .stat-card .icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 2.5rem; height: 2.5rem; border-radius: 0.6rem;
+            background: var(--teal-glow); font-size: 1.2rem; margin-bottom: 0.75rem;
+        }
         .stat-card .label { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-        .stat-card .value { font-size: 2.2rem; font-weight: 700; color: var(--teal); margin-top: 0.3rem; letter-spacing: -0.03em; }
+        .stat-card .value { font-size: 2.4rem; font-weight: 700; color: var(--teal); margin-top: 0.25rem; letter-spacing: -0.03em; line-height: 1.1; }
         /* Tables */
         .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; overflow-x: auto; box-shadow: var(--shadow-sm); }
         table { width: 100%; border-collapse: collapse; }
@@ -193,8 +201,8 @@
         .empty { color: var(--text-muted); text-align: center; padding: 2.5rem; font-style: italic; }
         .section { margin-bottom: 2rem; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        h1 { font-size: 1.6rem; margin-bottom: 1.2rem; color: var(--text); font-weight: 700; letter-spacing: -0.02em; }
-        h2 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        h1 { font-size: 1.85rem; margin-bottom: 1.5rem; color: var(--text); font-weight: 700; letter-spacing: -0.02em; }
+        h2 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
         .filter-bar select, .filter-bar input { transition: all var(--transition); }
         .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
         @media (max-width: 768px) {
@@ -213,8 +221,9 @@
                 background: var(--surface);
                 border: 1px solid var(--border);
                 border-radius: var(--radius);
-                margin-bottom: 0.75rem;
-                padding: 1rem;
+                margin-bottom: 1rem;
+                padding: 1.25rem;
+                box-shadow: var(--shadow-sm);
             }
             .table-wrap td {
                 display: flex;
