@@ -27,6 +27,7 @@ logger = structlog.get_logger()
 _RESULTS_PER_DEPTH = 12
 _GOSOM_TIMEOUT = 600  # 10 minutes
 _EXIT_ON_INACTIVITY = "5m"
+_GOSOM_DOCKER_IMAGE = "nuhoot-gosom:latest"
 
 
 class FinderError(Exception):
@@ -131,7 +132,10 @@ class FinderService:
     # ------------------------------------------------------------------
 
     def _run_gosom(self, query: str, max_results: int) -> str:
-        """Execute the gosom CLI and return its stdout (JSONL).
+        """Execute the gosom CLI via Docker and return its stdout (JSONL).
+
+        Uses a Docker container (Ubuntu 22.04) because gosom's Playwright
+        dependency doesn't support the host OS (Ubuntu 26.04).
 
         Includes a delay after the scrape to avoid IP bans.
         """
@@ -143,9 +147,16 @@ class FinderService:
                 f.write(query + "\n")
 
             cmd = [
-                self.gosom_path,
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                f"{tmp_path}:/data/query.txt",
+                "-v",
+                "gosom-browser-cache:/root/.cache/ms-playwright-go",
+                _GOSOM_DOCKER_IMAGE,
                 "-input",
-                tmp_path,
+                "/data/query.txt",
                 "-json",
                 "-depth",
                 str(depth),
@@ -156,7 +167,7 @@ class FinderService:
             ]
             logger.debug("finder.gosom.run", cmd=cmd)
             try:
-                result = subprocess.run(  # noqa: S603 — trusted binary path
+                result = subprocess.run(  # noqa: S603 — trusted command
                     cmd,
                     capture_output=True,
                     text=True,
@@ -164,7 +175,7 @@ class FinderService:
                     check=False,
                 )
             except FileNotFoundError as exc:
-                raise FinderError(f"gosom binary not found at {self.gosom_path}") from exc
+                raise FinderError("docker not found — is Docker installed?") from exc
             except subprocess.TimeoutExpired as exc:
                 raise FinderError(f"gosom timed out after {_GOSOM_TIMEOUT}s") from exc
 
