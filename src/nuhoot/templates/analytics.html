@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t('analytics', lang) }}</h1>
+
+<div class="two-col">
+    <div class="section">
+        <h2>{{ t('whatsapp_quota', lang) }}</h2>
+        <div class="stat-card">
+            <div class="label">{{ t('used', lang) }}: {{ quota.used }} / {{ quota.limit }}</div>
+            <div class="progress-bar" style="margin-top: 0.5rem;">
+                <div class="progress-fill" style="width: {{ quota_pct }}%;">
+                    {{ quota.used }} / {{ quota.limit }}
+                </div>
+            </div>
+            <div class="label" style="margin-top: 0.5rem;">
+                {{ t('remaining', lang) }}: {{ quota.remaining }}
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>{{ t('response_rate_chart', lang) }}</h2>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">{{ t('contacted', lang) }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ contacted_pct }}%;"></div>
+                </div>
+                <span class="bar-value">{{ stats.total_businesses }}</span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">{{ t('responded', lang) }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ responded_pct }}%;"></div>
+                </div>
+                <span class="bar-value">{{ stats.response_rate }}%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="two-col">
+    <div class="section">
+        <h2>{{ t('top_categories', lang) }}</h2>
+        {% if top_categories %}
+        <div class="bar-chart">
+            {% for cat in top_categories %}
+            <div class="bar-row">
+                <span class="bar-label">{{ cat.category }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ cat.pct }}%;"></div>
+                </div>
+                <span class="bar-value">{{ cat.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">{{ t('no_data', lang) }}</div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2>{{ t('seo_distribution', lang) }}</h2>
+        <div class="bar-chart">
+            <div class="bar-row">
+                <span class="bar-label">{{ t('seo_low', lang) }} (0-25)</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ seo_pct.seo_low }}%;"></div>
+                </div>
+                <span class="bar-value">{{ seo_dist.seo_low }}</span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">{{ t('seo_medium', lang) }} (26-50)</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ seo_pct.seo_medium }}%;"></div>
+                </div>
+                <span class="bar-value">{{ seo_dist.seo_medium }}</span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">{{ t('seo_good', lang) }} (51-75)</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ seo_pct.seo_good }}%;"></div>
+                </div>
+                <span class="bar-value">{{ seo_dist.seo_good }}</span>
+            </div>
+            <div class="bar-row">
+                <span class="bar-label">{{ t('seo_excellent', lang) }} (76-100)</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ seo_pct.seo_excellent }}%;"></div>
+                </div>
+                <span class="bar-value">{{ seo_dist.seo_excellent }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

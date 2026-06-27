@@ -14,6 +14,7 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "httpx>=0.28.0",
     "beautifulsoup4>=4.12.0",
+    "jinja2>=3.1.0",
     "redis>=5.0.0",
     "rq>=2.0.0",
     "python-dotenv>=1.0.0",
@@ -38,6 +39,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+nuhoot = ["templates/*.html"]
 
 [tool.ruff]
 line-length = 100

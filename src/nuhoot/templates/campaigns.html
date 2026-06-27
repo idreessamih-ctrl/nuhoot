@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ t('campaigns', lang) }}</h1>
+
+<div class="section">
+    <h2>{{ t('create_campaign', lang) }}</h2>
+    <form class="form-card" method="POST" action="/campaigns">
+        <label>{{ t('campaign_name', lang) }}</label>
+        <input type="text" name="name" required>
+        <label>{{ t('niche', lang) }}</label>
+        <select name="niche">
+            <option value="restaurants">Restaurants</option>
+            <option value="clinics">Clinics</option>
+            <option value="salons">Salons</option>
+            <option value="real_estate">Real Estate</option>
+            <option value="auto_shops">Auto Shops</option>
+        </select>
+        <label>{{ t('city', lang) }}</label>
+        <input type="text" name="city" value="Riyadh">
+        <div style="margin-top: 1rem;">
+            <button type="submit" class="btn btn-teal">{{ t('create_campaign', lang) }}</button>
+        </div>
+    </form>
+</div>
+
+<div class="section">
+    <h2>{{ t('campaigns', lang) }}</h2>
+    {% if campaigns %}
+    <div class="campaign-grid">
+        {% for camp in campaigns %}
+        <div class="campaign-card">
+            <h3>{{ camp.name }}</h3>
+            <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
+                {{ camp.niche }} · {{ camp.city }}
+            </div>
+            <div class="campaign-stats">
+                <span>{{ t('leads', lang) }}: <strong>{{ camp.total_leads }}</strong></span>
+                <span>{{ t('contacted', lang) }}: <strong>{{ camp.contacted }}</strong></span>
+                <span>{{ t('responded', lang) }}: <strong>{{ camp.responded }}</strong></span>
+                <span>{{ t('converted', lang) }}: <strong>{{ camp.converted }}</strong></span>
+            </div>
+            <div style="margin-top: 0.75rem;">
+                <span class="badge badge-{{ camp.status }}">{{ t('status_' ~ camp.status, lang) }}</span>
+            </div>
+            <div style="margin-top: 0.75rem;">
+                <a href="/campaigns/{{ camp.id }}/send" class="btn btn-teal">{{ t('send_to_all', lang) }}</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">{{ t('no_data', lang) }}</div>
+    {% endif %}
+</div>
+{% endblock %}
