@@ -89,6 +89,11 @@ def businesses_page(
     db: DbDep,
     lang: str = "ar",
     page: int = 1,
+    search: str = "",
+    category: str = "",
+    city: str = "",
+    status: str = "",
+    msg: str = "",
 ) -> Response:
     """Businesses management page — table, filters, pagination."""
     lang = _valid_lang(lang)
@@ -96,10 +101,21 @@ def businesses_page(
     per_page = 20
     offset = (page - 1) * per_page
 
-    businesses = list(db.scalars(select(Business).offset(offset).limit(per_page)).all())
-    total = db.scalar(select(func.count()).select_from(Business)) or 0
+    stmt = select(Business)
+    if search:
+        stmt = stmt.where(Business.name.ilike(f"%{search}%"))
+    if category:
+        stmt = stmt.where(Business.category == category)
+    if city:
+        stmt = stmt.where(Business.address.ilike(f"%{city}%"))
+    if status:
+        stmt = stmt.where(Business.status == status)
+
+    businesses = list(db.scalars(stmt.offset(offset).limit(per_page)).all())
+    total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
     total_pages = max(int(total + per_page - 1) // per_page, 1)
     categories = list(db.scalars(select(Business.category).distinct()).all())
+    cities = ["Riyadh", "Jeddah", "Mecca", "Medina", "Dammam", "Khobar"]
 
     return _render(
         request,
@@ -110,8 +126,14 @@ def businesses_page(
             "active": "businesses",
             "businesses": businesses,
             "categories": categories,
+            "cities": cities,
             "page": page,
             "total_pages": total_pages,
+            "search": search,
+            "category": category,
+            "city": city,
+            "status": status,
+            "msg": msg,
         },
     )
 

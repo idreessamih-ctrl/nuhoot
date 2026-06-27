@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Form
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -164,42 +164,32 @@ def get_business(
 def investigate_business(
     business_id: int,
     db: DbDep,
-) -> dict[str, object] | JSONResponse:
+    lang: str = Form("ar"),
+) -> dict[str, object] | JSONResponse | RedirectResponse:
     """Trigger digital presence investigation for a business."""
     biz = db.get(Business, business_id)
     if biz is None:
         return JSONResponse(
             status_code=404,
-            content={
-                "success": False,
-                "data": None,
-                "error": f"Business {business_id} not found",
-            },
+            content={"success": False, "data": None, "error": f"Business {business_id} not found"},
         )
     service = InvestigatorService(db)
     service.investigate(biz)
-    return {
-        "success": True,
-        "data": BusinessResponse.model_validate(biz),
-        "error": None,
-    }
+    return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=investigated", status_code=303)
 
 
 @router.post("/{business_id}/craft", response_model=None)
 def craft_business_pitch(
     business_id: int,
     db: DbDep,
-) -> dict[str, object] | JSONResponse:
+    lang: str = Form("ar"),
+) -> dict[str, object] | JSONResponse | RedirectResponse:
     """Generate an AI pitch for a business using GLM 5.2."""
     biz = db.get(Business, business_id)
     if biz is None:
         return JSONResponse(
             status_code=404,
-            content={
-                "success": False,
-                "data": None,
-                "error": f"Business {business_id} not found",
-            },
+            content={"success": False, "data": None, "error": f"Business {business_id} not found"},
         )
     service = CrafterService(db)
     try:
@@ -207,17 +197,9 @@ def craft_business_pitch(
     except CrafterError as exc:
         return JSONResponse(
             status_code=500,
-            content={
-                "success": False,
-                "data": None,
-                "error": str(exc),
-            },
+            content={"success": False, "data": None, "error": str(exc)},
         )
-    return {
-        "success": True,
-        "data": PitchResponse.model_validate(pitch),
-        "error": None,
-    }
+    return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=crafted", status_code=303)
 
 
 @router.get("/{business_id}/pitch", response_model=None)

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Form
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -53,28 +53,21 @@ class MessageResponse(BaseModel):
 def send_business_pitch(
     business_id: int,
     db: DbDep,
-) -> dict[str, object] | JSONResponse:
+    lang: str = Form("ar"),
+) -> dict[str, object] | JSONResponse | RedirectResponse:
     """Send the latest pitch to a business via WhatsApp."""
     biz = db.get(Business, business_id)
     if biz is None:
         return JSONResponse(
             status_code=404,
-            content={
-                "success": False,
-                "data": None,
-                "error": f"Business {business_id} not found",
-            },
+            content={"success": False, "data": None, "error": f"Business {business_id} not found"},
         )
     stmt = select(Pitch).where(Pitch.business_id == business_id).order_by(Pitch.created_at.desc())
     pitch = db.scalars(stmt).first()
     if pitch is None:
         return JSONResponse(
             status_code=404,
-            content={
-                "success": False,
-                "data": None,
-                "error": f"No pitch found for business {business_id}",
-            },
+            content={"success": False, "data": None, "error": f"No pitch found for business {business_id}"},
         )
     service = SenderService(db)
     try:
@@ -82,17 +75,9 @@ def send_business_pitch(
     except SenderError as exc:
         return JSONResponse(
             status_code=500,
-            content={
-                "success": False,
-                "data": None,
-                "error": str(exc),
-            },
+            content={"success": False, "data": None, "error": str(exc)},
         )
-    return {
-        "success": True,
-        "data": MessageResponse.model_validate(message),
-        "error": None,
-    }
+    return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=sent", status_code=303)
 
 
 @router.get("/{business_id}/messages", response_model=None)

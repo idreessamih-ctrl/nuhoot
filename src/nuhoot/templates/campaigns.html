@@ -5,6 +5,7 @@
 <div class="section">
     <h2>➕ {{ t('create_campaign', lang) }}</h2>
     <form class="form-card" method="POST" action="/campaigns">
+        <input type="hidden" name="lang" value="{{ lang }}">
         <label>{{ t('campaign_name', lang) }}</label>
         <input type="text" name="name" required>
         <label>{{ t('niche', lang) }}</label>
@@ -43,7 +44,10 @@
                 <span class="badge badge-{{ camp.status }}">{{ t('status_' ~ camp.status, lang) }}</span>
             </div>
             <div style="margin-top: 0.75rem;">
-                <a href="/campaigns/{{ camp.id }}/send" class="btn btn-teal">{{ t('send_to_all', lang) }}</a>
+                <form method="POST" action="/campaigns/{{ camp.id }}/send" style="display:inline">
+                    <input type="hidden" name="lang" value="{{ lang }}">
+                    <button type="submit" class="btn btn-teal">{{ t('send_to_all', lang) }}</button>
+                </form>
             </div>
         </div>
         {% endfor %}

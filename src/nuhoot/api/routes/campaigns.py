@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Form
+from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -29,11 +29,27 @@ class BatchSendResult(BaseModel):
     total: int = 0
 
 
+@router.post("", response_model=None)
+def create_campaign(
+    db: DbDep,
+    name: str = Form(...),
+    niche: str = Form(...),
+    city: str = Form(...),
+    lang: str = Form("ar"),
+) -> RedirectResponse:
+    """Create a new campaign, then redirect back to the campaigns page."""
+    campaign = Campaign(name=name, niche=niche, city=city, language=lang)
+    db.add(campaign)
+    db.commit()
+    return RedirectResponse(url=f"/campaigns-page?lang={lang}", status_code=303)
+
+
 @router.post("/{campaign_id}/send", response_model=None)
 def send_campaign_pitches(
     campaign_id: int,
     db: DbDep,
-) -> dict[str, object] | JSONResponse:
+    lang: str = Form("ar"),
+) -> dict[str, object] | JSONResponse | RedirectResponse:
     """Send pitches to all businesses in a campaign (batch).
 
     Iterates over every business linked to the campaign, finds its latest
@@ -72,8 +88,7 @@ def send_campaign_pitches(
             failed += 1
 
     result = BatchSendResult(sent=sent, failed=failed, total=len(businesses))
-    return {
-        "success": True,
-        "data": result.model_dump(),
-        "error": None,
-    }
+    return RedirectResponse(
+        url=f"/campaigns-page?lang={lang}&msg=sent-{sent}-{failed}-{len(businesses)}",
+        status_code=303,
+    )
