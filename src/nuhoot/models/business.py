@@ -1,6 +1,7 @@
 """Business/lead database model."""
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import DateTime, Float, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -41,7 +42,7 @@ class Business(Base):
         DateTime, server_default=func.now(), onupdate=func.now()
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         kwargs.setdefault("status", "found")
         kwargs.setdefault("has_website", False)
         kwargs.setdefault("has_instagram", False)

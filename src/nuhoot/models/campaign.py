@@ -1,6 +1,7 @@
 """Campaign database model."""
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import DateTime, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -37,7 +38,7 @@ class Campaign(Base):
         DateTime, server_default=func.now(), onupdate=func.now()
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         kwargs.setdefault("total_leads", 0)
         kwargs.setdefault("contacted", 0)
         kwargs.setdefault("responded", 0)
