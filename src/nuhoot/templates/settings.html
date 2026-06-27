@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>⚙️ {{ t('settings', lang) }}</h1>
+
+{% if msg == 'saved' %}
+<div style="background: var(--teal-glow); border: 1px solid var(--teal-dark); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.5rem; color: var(--teal); font-weight: 600;">✓ {{ t('settings_saved', lang) }}</div>
+{% elif msg == 'whatsapp_connected' %}
+<div style="background: var(--teal-glow); border: 1px solid var(--teal-dark); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.5rem; color: var(--teal); font-weight: 600;">✓ {{ t('whatsapp_connected_msg', lang) }}</div>
+{% elif msg == 'disconnected' %}
+<div style="background: rgba(248,113,113,0.1); border: 1px solid var(--red); border-radius: var(--radius-sm); padding: 0.75rem 1rem; margin-bottom: 1.5rem; color: var(--red); font-weight: 600;">{{ t('whatsapp_disconnected_msg', lang) }}</div>
+{% endif %}
+
+<!-- AI API Key -->
+<div class="section">
+    <h2>🤖 {{ t('ai_settings', lang) }}</h2>
+    <form class="form-card" method="POST" action="/settings/api-keys" style="max-width: 100%;">
+        <input type="hidden" name="lang" value="{{ lang }}">
+        <input type="hidden" name="google_maps_api_key" value="{{ display.get('google_maps_api_key', '') }}">
+        <label>{{ t('umans_api_key', lang) }}</label>
+        <input type="password" name="umans_api_key" placeholder="{{ display.get('umans_api_key', '') or 'sk-...' }}" value="">
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            {% if ai_connected %}✓ {{ t('connected', lang) }} — {{ display.get('umans_api_key', '') }}{% else %}{{ t('not_connected', lang) }}{% endif %}
+        </div>
+        <div style="margin-top: 1rem;">
+            <button type="submit" class="btn btn-teal">{{ t('save', lang) }}</button>
+        </div>
+    </form>
+</div>
+
+<!-- Google Maps API Key -->
+<div class="section">
+    <h2>🗺️ {{ t('google_maps_settings', lang) }}</h2>
+    <form class="form-card" method="POST" action="/settings/api-keys" style="max-width: 100%;">
+        <input type="hidden" name="lang" value="{{ lang }}">
+        <input type="hidden" name="umans_api_key" value="{{ display.get('umans_api_key', '') }}">
+        <label>{{ t('google_maps_api_key', lang) }}</label>
+        <input type="password" name="google_maps_api_key" placeholder="{{ display.get('google_maps_api_key', '') or 'AIza...' }}" value="">
+        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            {% if maps_connected %}✓ {{ t('connected', lang) }} — {{ display.get('google_maps_api_key', '') }}{% else %}{{ t('not_connected', lang) }}{% endif %}
+        </div>
+        <div style="margin-top: 1rem;">
+            <button type="submit" class="btn btn-teal">{{ t('save', lang) }}</button>
+        </div>
+    </form>
+</div>
+
+<!-- WhatsApp Cloud API -->
+<div class="section">
+    <h2>💬 {{ t('whatsapp_settings', lang) }}</h2>
+    <div class="form-card" style="max-width: 100%;">
+        {% if whatsapp_connected %}
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <span style="width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--green); display: inline-block;"></span>
+            <span style="color: var(--green); font-weight: 600;">{{ t('whatsapp_connected_status', lang) }}</span>
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">
+            {{ t('phone_number_id', lang) }}: <strong style="color: var(--text);">{{ display.get('whatsapp_phone_number_id', '—') }}</strong>
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            {{ t('access_token', lang) }}: <strong style="color: var(--text);">{{ display.get('whatsapp_access_token', '—') }}</strong>
+        </div>
+        <form method="POST" action="/settings/whatsapp/disconnect" style="display:inline;">
+            <input type="hidden" name="lang" value="{{ lang }}">
+            <button type="submit" class="btn btn-red">{{ t('disconnect', lang) }}</button>
+        </form>
+        {% else %}
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <span style="width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--text-muted); display: inline-block;"></span>
+            <span style="color: var(--text-muted); font-weight: 600;">{{ t('not_connected', lang) }}</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">{{ t('whatsapp_connect_desc', lang) }}</p>
+        {% if meta_app_id %}
+        <button type="button" class="btn btn-teal" id="waEmbeddedSignup" style="font-size: 0.9rem; padding: 0.6rem 1.2rem;">
+            🔗 {{ t('connect_whatsapp', lang) }}
+        </button>
+        {% else %}
+        <p style="color: var(--amber); font-size: 0.85rem; padding: 0.75rem; background: rgba(251,191,36,0.1); border-radius: var(--radius-sm); border: 1px solid rgba(251,191,36,0.3);">
+            ⚠️ {{ t('meta_app_not_configured', lang) }}
+        </p>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Meta Embedded Signup Script -->
+{% if meta_app_id and not whatsapp_connected %}
+<script src="https://connect.facebook.net/en_US/sdk.js"></script>
+<script>
+window.fbAsyncInit = function() {
+    FB.init({
+        appId: '{{ meta_app_id }}',
+        cookie: true,
+        xfbml: true,
+        version: 'v21.0'
+    });
+};
+
+document.getElementById('waEmbeddedSignup')?.addEventListener('click', function() {
+    FB.login(function(response) {
+        if (response.authResponse) {
+            var code = response.authResponse.code;
+            // Exchange code for token via backend
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/settings/whatsapp/connect';
+            var langInput = document.createElement('input');
+            langInput.type = 'hidden';
+            langInput.name = 'lang';
+            langInput.value = '{{ lang }}';
+            form.appendChild(langInput);
+            var codeInput = document.createElement('input');
+            codeInput.type = 'hidden';
+            codeInput.name = 'code';
+            codeInput.value = code;
+            form.appendChild(codeInput);
+            var phoneInput = document.createElement('input');
+            phoneInput.type = 'hidden';
+            phoneInput.name = 'phone_number_id';
+            phoneInput.value = '';
+            form.appendChild(phoneInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }, {
+        config_id: '{{ meta_app_id }}',
+        response_type: 'code',
+        override_default_response_type: true,
+        extras: {
+            feature: 'whatsapp_embedded_signup',
+            setup: {
+                business: { name: 'Nuhoot' },
+                phone: { display_name: 'Nuhoot' }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

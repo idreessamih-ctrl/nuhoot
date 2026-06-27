@@ -12,6 +12,13 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
+    # Encryption key for storing API credentials (change in production!)
+    encryption_key: str = "nuhoot-dev-key-change-in-prod"
+
+    # Meta Embedded Signup (filled from Settings page or .env)
+    meta_app_id: str = ""
+    meta_app_secret: str = ""
+
     # AI (GLM 5.2 via umans.ai)
     umans_api_key: str = ""
     ai_model: str = "umans-glm-5.2"

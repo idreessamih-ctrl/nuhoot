@@ -267,6 +267,7 @@
             <a href="/businesses-page?lang={{ lang }}" class="{% if active == 'businesses' %}active{% endif %}">{{ t('businesses', lang) }}</a>
             <a href="/campaigns-page?lang={{ lang }}" class="{% if active == 'campaigns' %}active{% endif %}">{{ t('campaigns', lang) }}</a>
             <a href="/analytics?lang={{ lang }}" class="{% if active == 'analytics' %}active{% endif %}">{{ t('analytics', lang) }}</a>
+            <a href="/settings?lang={{ lang }}" class="{% if active == 'settings' %}active{% endif %}">⚙️ {{ t('settings', lang) }}</a>
         </div>
         <div class="lang-toggle">
             <a href="{{ request.url.path }}?lang=ar" class="{% if lang == 'ar' %}active{% endif %}">{{ t('language_toggle_ar', lang) }}</a>
