@@ -8,13 +8,13 @@
     <select name="category">
         <option value="">{{ t('category', lang) }}: {{ t('all', lang) }}</option>
         {% for cat in categories %}
-        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ cat }}</option>
+        <option value="{{ cat }}" {% if category == cat %}selected{% endif %}>{{ t('cat_' ~ cat, lang) if t('cat_' ~ cat, lang) != 'cat_' ~ cat else cat }}</option>
         {% endfor %}
     </select>
     <select name="city">
         <option value="">{{ t('city', lang) }}: {{ t('all', lang) }}</option>
         {% for c in cities %}
-        <option value="{{ c }}" {% if city == c %}selected{% endif %}>{{ c }}</option>
+        <option value="{{ c }}" {% if city == c %}selected{% endif %}>{{ t('city_' ~ c.lower(), lang) if t('city_' ~ c.lower(), lang) != 'city_' ~ c.lower() else c }}</option>
         {% endfor %}
     </select>
     <select name="status">
@@ -46,7 +46,7 @@
             {% for biz in businesses %}
             <tr>
                 <td data-label="{{ t('name', lang) }}">{{ biz.name }}</td>
-                <td data-label="{{ t('category', lang) }}">{{ biz.category }}</td>
+                <td data-label="{{ t('category', lang) }}">{{ t('cat_' ~ biz.category, lang) if biz.category else '—' }}</td>
                 <td data-label="{{ t('phone', lang) }}" style="white-space:nowrap">{{ biz.phone or '—' }}</td>
                 <td data-label="{{ t('rating', lang) }}">{{ ('%.1f' % biz.rating) if biz.rating else '—' }}</td>
                 <td data-label="{{ t('website', lang) }}">{{ ('✓' if biz.has_website else '—') }}</td>

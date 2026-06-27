@@ -42,7 +42,7 @@
                     {% for biz in recent_businesses %}
                     <tr>
                         <td data-label="{{ t('name', lang) }}">{{ biz.name }}</td>
-                        <td data-label="{{ t('category', lang) }}">{{ biz.category }}</td>
+                        <td data-label="{{ t('category', lang) }}">{{ t('cat_' ~ biz.category, lang) if biz.category else '—' }}</td>
                         <td data-label="{{ t('status', lang) }}"><span class="badge badge-{{ biz.status }}">{{ t('status_' ~ biz.status, lang) }}</span></td>
                     </tr>
                     {% endfor %}

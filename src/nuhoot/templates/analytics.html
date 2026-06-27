@@ -46,7 +46,7 @@
         <div class="bar-chart">
             {% for cat in top_categories %}
             <div class="bar-row">
-                <span class="bar-label">{{ cat.category }}</span>
+                <span class="bar-label">{{ t('cat_' ~ cat.category, lang) if t('cat_' ~ cat.category, lang) != 'cat_' ~ cat.category else cat.category }}</span>
                 <div class="bar-track">
                     <div class="bar-fill" style="width: {{ cat.pct }}%;"></div>
                 </div>

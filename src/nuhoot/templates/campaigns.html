@@ -10,14 +10,14 @@
         <input type="text" name="name" required>
         <label>{{ t('niche', lang) }}</label>
         <select name="niche">
-            <option value="restaurants">Restaurants</option>
-            <option value="clinics">Clinics</option>
-            <option value="salons">Salons</option>
-            <option value="real_estate">Real Estate</option>
-            <option value="auto_shops">Auto Shops</option>
+            <option value="restaurants">{{ t('niche_restaurants', lang) }}</option>
+            <option value="clinics">{{ t('niche_clinics', lang) }}</option>
+            <option value="salons">{{ t('niche_salons', lang) }}</option>
+            <option value="real_estate">{{ t('niche_real_estate', lang) }}</option>
+            <option value="auto_shops">{{ t('niche_auto_shops', lang) }}</option>
         </select>
         <label>{{ t('city', lang) }}</label>
-        <input type="text" name="city" value="Riyadh">
+        <input type="text" name="city" value="{{ 'الرياض' if lang == 'ar' else 'Riyadh' }}">
         <div style="margin-top: 1rem;">
             <button type="submit" class="btn btn-teal">{{ t('create_campaign', lang) }}</button>
         </div>
@@ -32,7 +32,7 @@
         <div class="campaign-card">
             <h3>{{ camp.name }}</h3>
             <div style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem;">
-                {{ camp.niche }} · {{ camp.city }}
+                {{ t('niche_' ~ camp.niche, lang) if camp.niche else camp.niche }} · {{ camp.city }}
             </div>
             <div class="campaign-stats">
                 <span>{{ t('leads', lang) }}: <strong>{{ camp.total_leads }}</strong></span>
