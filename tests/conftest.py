@@ -14,8 +14,8 @@ def db_session():
     """In-memory SQLite database for unit tests."""
     engine = create_engine("sqlite://", echo=False)
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    session_factory = sessionmaker(bind=engine)
+    session = session_factory()
     try:
         yield session
     finally:
@@ -26,8 +26,10 @@ def db_session():
 @pytest.fixture
 def client(db_session):
     """FastAPI test client with mocked database."""
+
     def override_get_db():
         yield db_session
+
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
         yield c
