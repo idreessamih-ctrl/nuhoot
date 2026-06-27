@@ -6,6 +6,8 @@ from unittest.mock import MagicMock, patch
 import httpx
 
 from nuhoot.models.business import Business
+from nuhoot.models.pitch import Pitch
+from nuhoot.services.crafter import CrafterError, CrafterService
 from nuhoot.services.finder import FinderService
 
 
@@ -215,3 +217,118 @@ class TestInvestigateBusiness:
         assert body["data"]["has_website"] is False
         assert body["data"]["seo_score"] == 0
         assert body["data"]["status"] == "investigated"
+
+
+# ------------------------------------------------------------------ #
+# Pitch crafting route tests
+# ------------------------------------------------------------------ #
+
+_CRAFT_PITCH_TEXT = (
+    "مرحباً مطعم النخيل،\n\n"
+    "نحن وكالة تسويق رقمي متخصصة في السوق السعودي. "
+    "هل يمكننا تحديد موعد لمكالمة؟\n\n"
+    "لإلغاء الاشتراك، أرسل إيقاف"
+)
+_CRAFT_SAMPLE_POSTS = [
+    "منشور أول #مطعم_النخيل #الرياض",
+    "منشور ثانٍ #مطعم #السعودية",
+    "منشور ثالث #طعام #سعودي",
+]
+
+
+def _make_pitch(business_id: int, pitch_id: int = 1) -> Pitch:
+    """Create a Pitch object for testing (with a synthetic id)."""
+    pitch = Pitch(
+        business_id=business_id,
+        pitch_text=_CRAFT_PITCH_TEXT,
+        sample_posts=list(_CRAFT_SAMPLE_POSTS),
+        language="ar",
+        status="draft",
+    )
+    pitch.id = pitch_id
+    return pitch
+
+
+class TestCraftBusinessPitch:
+    def test_craft_returns_pitch_and_sample_posts(self, client, db_session):
+        """POST /businesses/{id}/craft generates and returns a pitch."""
+        biz = Business(name="مطعم النخيل", category="restaurants", rating=4.5)
+        db_session.add(biz)
+        db_session.commit()
+        biz_id = biz.id
+
+        mock_pitch = _make_pitch(biz_id)
+        with patch.object(CrafterService, "craft_pitch", return_value=mock_pitch):
+            response = client.post(f"/businesses/{biz_id}/craft")
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["success"] is True
+        assert body["data"]["pitch_text"] == _CRAFT_PITCH_TEXT
+        assert len(body["data"]["sample_posts"]) == 3
+        assert body["data"]["language"] == "ar"
+        assert body["data"]["status"] == "draft"
+
+    def test_craft_returns_404_for_nonexistent(self, client):
+        """POST /businesses/{id}/craft returns 404 for unknown ID."""
+        response = client.post("/businesses/99999/craft")
+        assert response.status_code == 404
+        body = response.json()
+        assert body["success"] is False
+
+    def test_craft_returns_500_on_crafter_error(self, client, db_session):
+        """POST /businesses/{id}/craft returns 500 when AI fails."""
+        biz = Business(name="مطعم", category="restaurants")
+        db_session.add(biz)
+        db_session.commit()
+        biz_id = biz.id
+
+        with patch.object(
+            CrafterService,
+            "craft_pitch",
+            side_effect=CrafterError("AI API returned HTTP 500"),
+        ):
+            response = client.post(f"/businesses/{biz_id}/craft")
+
+        assert response.status_code == 500
+        body = response.json()
+        assert body["success"] is False
+
+
+class TestGetBusinessPitch:
+    def test_get_pitch_returns_existing_pitch(self, client, db_session):
+        """GET /businesses/{id}/pitch returns the stored pitch."""
+        biz = Business(name="مطعم النخيل", category="restaurants")
+        db_session.add(biz)
+        db_session.commit()
+        biz_id = biz.id
+
+        pitch = _make_pitch(biz_id)
+        db_session.add(pitch)
+        db_session.commit()
+
+        response = client.get(f"/businesses/{biz_id}/pitch")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["success"] is True
+        assert body["data"]["pitch_text"] == _CRAFT_PITCH_TEXT
+        assert len(body["data"]["sample_posts"]) == 3
+
+    def test_get_pitch_returns_404_when_no_pitch(self, client, db_session):
+        """GET /businesses/{id}/pitch returns 404 when no pitch exists."""
+        biz = Business(name="مطعم بلا عرض", category="restaurants")
+        db_session.add(biz)
+        db_session.commit()
+        biz_id = biz.id
+
+        response = client.get(f"/businesses/{biz_id}/pitch")
+        assert response.status_code == 404
+        body = response.json()
+        assert body["success"] is False
+
+    def test_get_pitch_returns_404_for_nonexistent_business(self, client):
+        """GET /businesses/{id}/pitch returns 404 for unknown business."""
+        response = client.get("/businesses/99999/pitch")
+        assert response.status_code == 404
+        body = response.json()
+        assert body["success"] is False
