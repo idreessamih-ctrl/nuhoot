@@ -15,7 +15,7 @@ from nuhoot.database import get_db
 from nuhoot.models.business import Business
 from nuhoot.models.pitch import Pitch
 from nuhoot.services.crafter import CrafterError, CrafterService
-from nuhoot.services.finder import FinderService
+from nuhoot.services.finder import FinderError, FinderService
 from nuhoot.services.investigator import InvestigatorService
 
 router = APIRouter(prefix="/businesses", tags=["businesses"])
@@ -109,14 +109,24 @@ def list_businesses(
 def search_businesses(
     request: SearchRequest,
     db: DbDep,
-) -> dict[str, object]:
+) -> dict[str, object] | JSONResponse:
     """Trigger a Google Maps scrape for the given category and city."""
     service = FinderService(db, delay=float(settings.scraper_delay_seconds))
-    businesses = service.search(
-        category=request.category,
-        city=request.city,
-        max_results=request.max_results,
-    )
+    try:
+        businesses = service.search(
+            category=request.category,
+            city=request.city,
+            max_results=request.max_results,
+        )
+    except FinderError as exc:
+        return JSONResponse(
+            status_code=502,
+            content={
+                "success": False,
+                "data": None,
+                "error": f"Scraper failed: {exc}",
+            },
+        )
     return {
         "success": True,
         "data": {
