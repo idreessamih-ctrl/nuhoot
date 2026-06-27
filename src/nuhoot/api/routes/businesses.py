@@ -14,6 +14,7 @@ from nuhoot.config import settings
 from nuhoot.database import get_db
 from nuhoot.models.business import Business
 from nuhoot.services.finder import FinderService
+from nuhoot.services.investigator import InvestigatorService
 
 router = APIRouter(prefix="/businesses", tags=["businesses"])
 
@@ -49,8 +50,11 @@ class BusinessResponse(BaseModel):
     longitude: float | None = None
     rating: float | None = None
     review_count: int | None = None
+    instagram: str | None = None
     has_website: bool = False
     has_instagram: bool = False
+    seo_score: int | None = None
+    social_score: int | None = None
     status: str = "found"
 
 
@@ -124,6 +128,31 @@ def get_business(
                 "error": f"Business {business_id} not found",
             },
         )
+    return {
+        "success": True,
+        "data": BusinessResponse.model_validate(biz),
+        "error": None,
+    }
+
+
+@router.post("/{business_id}/investigate", response_model=None)
+def investigate_business(
+    business_id: int,
+    db: DbDep,
+) -> dict[str, object] | JSONResponse:
+    """Trigger digital presence investigation for a business."""
+    biz = db.get(Business, business_id)
+    if biz is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "data": None,
+                "error": f"Business {business_id} not found",
+            },
+        )
+    service = InvestigatorService(db)
+    service.investigate(biz)
     return {
         "success": True,
         "data": BusinessResponse.model_validate(biz),

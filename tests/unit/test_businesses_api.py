@@ -1,7 +1,9 @@
 """Tests for businesses API routes."""
 
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import httpx
 
 from nuhoot.models.business import Business
 from nuhoot.services.finder import FinderService
@@ -129,3 +131,87 @@ class TestGetBusinessById:
         assert response.status_code == 404
         body = response.json()
         assert body["success"] is False
+
+
+_INVESTIGATE_HTML = """\
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <title>مطعم النخيل</title>
+    <meta name="description" content="مطعم النخيل">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="مطعم النخيل">
+</head>
+<body>
+    <h1>مرحبا</h1>
+    <a href="https://www.instagram.com/nakheel">Instagram</a>
+</body>
+</html>
+"""
+
+
+def _mock_httpx_response(html: str) -> MagicMock:
+    """Build a mock httpx.Response."""
+    response = MagicMock(spec=httpx.Response)
+    response.text = html
+    response.status_code = 200
+    return response
+
+
+class TestInvestigateBusiness:
+    def test_investigate_returns_updated_business(self, client, db_session):
+        """POST /businesses/{id}/investigate triggers investigation."""
+        biz = Business(
+            name="مطعم النخيل",
+            category="restaurants",
+            website="https://example.com",
+            rating=4.5,
+            review_count=120,
+        )
+        db_session.add(biz)
+        db_session.commit()
+        biz_id = biz.id
+        with patch("nuhoot.services.investigator.httpx.Client") as mock_client_cls:
+            mock_client = MagicMock()
+            mock_client.__enter__ = MagicMock(return_value=mock_client)
+            mock_client.__exit__ = MagicMock(return_value=False)
+            mock_client.get.return_value = _mock_httpx_response(_INVESTIGATE_HTML)
+            mock_client_cls.return_value = mock_client
+            response = client.post(f"/businesses/{biz_id}/investigate")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["success"] is True
+        assert body["data"]["has_website"] is True
+        assert body["data"]["has_instagram"] is True
+        assert body["data"]["seo_score"] is not None
+        assert body["data"]["social_score"] is not None
+        assert body["data"]["status"] == "investigated"
+
+    def test_investigate_returns_404_for_nonexistent(self, client):
+        """POST /businesses/{id}/investigate returns 404 for unknown ID."""
+        response = client.post("/businesses/99999/investigate")
+        assert response.status_code == 404
+        body = response.json()
+        assert body["success"] is False
+
+    def test_investigate_handles_no_website(self, client, db_session):
+        """POST /businesses/{id}/investigate works for business without website."""
+        biz = Business(
+            name="متجر بلا موقع",
+            category="electronics",
+            website=None,
+            rating=3.5,
+            review_count=10,
+        )
+        db_session.add(biz)
+        db_session.commit()
+        biz_id = biz.id
+        with patch("nuhoot.services.investigator.httpx.Client") as mock_client_cls:
+            mock_client_cls.return_value = MagicMock()
+            response = client.post(f"/businesses/{biz_id}/investigate")
+        assert response.status_code == 200
+        body = response.json()
+        assert body["success"] is True
+        assert body["data"]["has_website"] is False
+        assert body["data"]["seo_score"] == 0
+        assert body["data"]["status"] == "investigated"
