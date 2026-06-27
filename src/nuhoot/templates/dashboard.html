@@ -37,9 +37,9 @@
                     {% if recent_businesses %}
                     {% for biz in recent_businesses %}
                     <tr>
-                        <td>{{ biz.name }}</td>
-                        <td>{{ biz.category }}</td>
-                        <td><span class="badge badge-{{ biz.status }}">{{ t('status_' ~ biz.status, lang) }}</span></td>
+                        <td data-label="{{ t('name', lang) }}">{{ biz.name }}</td>
+                        <td data-label="{{ t('category', lang) }}">{{ biz.category }}</td>
+                        <td data-label="{{ t('status', lang) }}"><span class="badge badge-{{ biz.status }}">{{ t('status_' ~ biz.status, lang) }}</span></td>
                     </tr>
                     {% endfor %}
                     {% else %}

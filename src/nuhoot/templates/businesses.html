@@ -45,13 +45,13 @@
             {% if businesses %}
             {% for biz in businesses %}
             <tr>
-                <td>{{ biz.name }}</td>
-                <td>{{ biz.category }}</td>
-                <td>{{ biz.phone or '—' }}</td>
-                <td>{{ ('%.1f' % biz.rating) if biz.rating else '—' }}</td>
-                <td>{{ ('✓' if biz.has_website else '—') }}</td>
-                <td><span class="badge badge-{{ biz.status }}">{{ t('status_' ~ biz.status, lang) }}</span></td>
-                <td>
+                <td data-label="{{ t('name', lang) }}">{{ biz.name }}</td>
+                <td data-label="{{ t('category', lang) }}">{{ biz.category }}</td>
+                <td data-label="{{ t('phone', lang) }}" style="white-space:nowrap">{{ biz.phone or '—' }}</td>
+                <td data-label="{{ t('rating', lang) }}">{{ ('%.1f' % biz.rating) if biz.rating else '—' }}</td>
+                <td data-label="{{ t('website', lang) }}">{{ ('✓' if biz.has_website else '—') }}</td>
+                <td data-label="{{ t('status', lang) }}"><span class="badge badge-{{ biz.status }}">{{ t('status_' ~ biz.status, lang) }}</span></td>
+                <td data-label="{{ t('actions', lang) }}">
                     <form method="POST" action="/businesses/{{ biz.id }}/investigate" style="display:inline">
                         <input type="hidden" name="lang" value="{{ lang }}">
                         <button type="submit" class="btn btn-outline">{{ t('investigate', lang) }}</button>
