@@ -25,7 +25,7 @@ from nuhoot.models.pitch import Pitch
 
 logger = structlog.get_logger()
 
-_DEFAULT_TIMEOUT = 30.0
+_DEFAULT_TIMEOUT = 120.0
 _AI_TEMPERATURE = 0.7
 
 # PDPL compliance — opt-out text appended to every pitch (Saudi data law).
@@ -161,6 +161,7 @@ class CrafterService:
                 {"role": "user", "content": user_prompt},
             ],
             "temperature": _AI_TEMPERATURE,
+            "max_tokens": 4000,
         }
 
         try:
@@ -192,13 +193,30 @@ class CrafterService:
     def _parse_response(self, content: str) -> tuple[str, list[str]]:
         """Parse the AI content JSON into (pitch_text, sample_posts).
 
+        Handles GLM 5.2 responses that may wrap JSON in markdown code blocks
+        or include preamble text before the JSON.
+
         Raises:
             CrafterError: If the content is not valid JSON or missing fields.
         """
+        # Strip whitespace
+        content = content.strip()
+
+        # Try to extract JSON from markdown code blocks first
+        import re
+        json_match = re.search(r'```(?:json)?\s*\n?(.*?)\n?```', content, re.DOTALL)
+        if json_match:
+            content = json_match.group(1).strip()
+        else:
+            # Try to find JSON object directly
+            brace_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if brace_match:
+                content = brace_match.group(0).strip()
+
         try:
             parsed: Any = json.loads(content)
         except json.JSONDecodeError as exc:
-            raise CrafterError(f"Failed to parse AI response as JSON: {exc}") from exc
+            raise CrafterError(f"Failed to parse AI response as JSON: {exc}\nContent: {content[:200]}") from exc
 
         if not isinstance(parsed, dict):
             raise CrafterError("AI response is not a JSON object")
