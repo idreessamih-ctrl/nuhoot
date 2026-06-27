@@ -13,6 +13,8 @@ from sqlalchemy.orm import Session
 from nuhoot.config import settings
 from nuhoot.database import get_db
 from nuhoot.models.business import Business
+from nuhoot.models.pitch import Pitch
+from nuhoot.services.crafter import CrafterError, CrafterService
 from nuhoot.services.finder import FinderService
 from nuhoot.services.investigator import InvestigatorService
 
@@ -56,6 +58,19 @@ class BusinessResponse(BaseModel):
     seo_score: int | None = None
     social_score: int | None = None
     status: str = "found"
+
+
+class PitchResponse(BaseModel):
+    """Serialized pitch — AI-generated WhatsApp message + sample posts."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    business_id: int
+    pitch_text: str
+    sample_posts: list[str]
+    language: str = "ar"
+    status: str = "draft"
 
 
 # ------------------------------------------------------------------
@@ -156,5 +171,74 @@ def investigate_business(
     return {
         "success": True,
         "data": BusinessResponse.model_validate(biz),
+        "error": None,
+    }
+
+
+@router.post("/{business_id}/craft", response_model=None)
+def craft_business_pitch(
+    business_id: int,
+    db: DbDep,
+) -> dict[str, object] | JSONResponse:
+    """Generate an AI pitch for a business using GLM 5.2."""
+    biz = db.get(Business, business_id)
+    if biz is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "data": None,
+                "error": f"Business {business_id} not found",
+            },
+        )
+    service = CrafterService(db)
+    try:
+        pitch = service.craft_pitch(biz)
+    except CrafterError as exc:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "data": None,
+                "error": str(exc),
+            },
+        )
+    return {
+        "success": True,
+        "data": PitchResponse.model_validate(pitch),
+        "error": None,
+    }
+
+
+@router.get("/{business_id}/pitch", response_model=None)
+def get_business_pitch(
+    business_id: int,
+    db: DbDep,
+) -> dict[str, object] | JSONResponse:
+    """Get the most recent pitch for a business."""
+    biz = db.get(Business, business_id)
+    if biz is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "data": None,
+                "error": f"Business {business_id} not found",
+            },
+        )
+    stmt = select(Pitch).where(Pitch.business_id == business_id).order_by(Pitch.created_at.desc())
+    pitch = db.scalars(stmt).first()
+    if pitch is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "data": None,
+                "error": f"No pitch found for business {business_id}",
+            },
+        )
+    return {
+        "success": True,
+        "data": PitchResponse.model_validate(pitch),
         "error": None,
     }
