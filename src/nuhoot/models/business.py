@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Float, Integer, String, Text, func
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from nuhoot.database import Base
@@ -36,6 +36,14 @@ class Business(Base):
     # Status tracking
     status: Mapped[str] = mapped_column(String(50), insert_default="found")
     # found → investigated → pitched → contacted → responded → converted
+
+    # Optional campaign link — set when a business is added to a campaign.
+    campaign_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("campaigns.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

@@ -2,7 +2,11 @@
 
 import pytest
 
-from nuhoot.utils.phone import is_whatsapp_capable, normalize_saudi_phone
+from nuhoot.utils.phone import (
+    format_phone_for_whatsapp,
+    is_whatsapp_capable,
+    normalize_saudi_phone,
+)
 
 
 class TestNormalizeSaudiPhone:
@@ -37,3 +41,17 @@ class TestIsWhatsappCapable:
 
     def test_invalid_number(self):
         assert is_whatsapp_capable("12345") is False
+
+
+class TestFormatPhoneForWhatsapp:
+    def test_strips_plus_and_spaces(self):
+        assert format_phone_for_whatsapp("+966 50 123 4567") == "966501234567"
+
+    def test_strips_dashes(self):
+        assert format_phone_for_whatsapp("+966-50-123-4567") == "966501234567"
+
+    def test_strips_parentheses(self):
+        assert format_phone_for_whatsapp("(966) 501234567") == "966501234567"
+
+    def test_already_digits_unchanged(self):
+        assert format_phone_for_whatsapp("966501234567") == "966501234567"
