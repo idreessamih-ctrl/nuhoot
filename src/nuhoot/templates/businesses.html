@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ t('businesses', lang) }}</h1>
+<h1>🏢 {{ t('businesses', lang) }}</h1>
 
 <div class="filter-bar">
-    <input type="text" placeholder="{{ t('search', lang) }}">
+    <input type="text" placeholder="🔍 {{ t('search', lang) }}">
     <select>
         <option value="">{{ t('category', lang) }}: {{ t('all', lang) }}</option>
         {% for cat in categories %}

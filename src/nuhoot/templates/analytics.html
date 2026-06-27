@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ t('analytics', lang) }}</h1>
+<h1>📈 {{ t('analytics', lang) }}</h1>
 
 <div class="two-col">
     <div class="section">
-        <h2>{{ t('whatsapp_quota', lang) }}</h2>
+        <h2>💬 {{ t('whatsapp_quota', lang) }}</h2>
         <div class="stat-card">
             <div class="label">{{ t('used', lang) }}: {{ quota.used }} / {{ quota.limit }}</div>
             <div class="progress-bar" style="margin-top: 0.5rem;">
@@ -19,7 +19,7 @@
     </div>
 
     <div class="section">
-        <h2>{{ t('response_rate_chart', lang) }}</h2>
+        <h2>📊 {{ t('response_rate_chart', lang) }}</h2>
         <div class="bar-chart">
             <div class="bar-row">
                 <span class="bar-label">{{ t('contacted', lang) }}</span>
@@ -41,7 +41,7 @@
 
 <div class="two-col">
     <div class="section">
-        <h2>{{ t('top_categories', lang) }}</h2>
+        <h2>🏷️ {{ t('top_categories', lang) }}</h2>
         {% if top_categories %}
         <div class="bar-chart">
             {% for cat in top_categories %}
@@ -60,7 +60,7 @@
     </div>
 
     <div class="section">
-        <h2>{{ t('seo_distribution', lang) }}</h2>
+        <h2>🔍 {{ t('seo_distribution', lang) }}</h2>
         <div class="bar-chart">
             <div class="bar-row">
                 <span class="bar-label">{{ t('seo_low', lang) }} (0-25)</span>

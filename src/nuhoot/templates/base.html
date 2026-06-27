@@ -9,31 +9,43 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --surface-hover: #334155;
-            --border: #334155;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
+            --bg: #0a0f1e;
+            --surface: #131a2e;
+            --surface-2: #1a2340;
+            --surface-hover: #243056;
+            --border: #243056;
+            --border-light: #2d3a5f;
+            --text: #eef2ff;
+            --text-muted: #8b95b3;
             --teal: #2dd4bf;
             --teal-dark: #14b8a6;
-            --teal-glow: rgba(45, 212, 191, 0.15);
+            --teal-light: #5eead4;
+            --teal-glow: rgba(45, 212, 191, 0.12);
             --red: #f87171;
             --amber: #fbbf24;
             --green: #4ade80;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+            --radius: 0.75rem;
+            --radius-sm: 0.5rem;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: var(--bg);
+            background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45,212,191,0.06), transparent);
             color: var(--text);
             font-family: {% if lang == 'ar' %}'Cairo'{% else %}'Inter'{% endif %}, sans-serif;
             min-height: 100vh;
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
         /* Navbar */
         nav.navbar {
-            background: var(--surface);
-            border-bottom: 2px solid var(--teal-dark);
+            background: rgba(19, 26, 46, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
             padding: 0.75rem 1.5rem;
             display: flex;
             align-items: center;
@@ -41,26 +53,32 @@
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: var(--shadow-sm);
         }
         .brand {
             font-size: 1.4rem;
             font-weight: 700;
-            color: var(--teal);
+            background: linear-gradient(135deg, var(--teal), var(--teal-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-decoration: none;
             white-space: nowrap;
+            letter-spacing: -0.02em;
         }
-        .nav-links { display: flex; gap: 0.25rem; flex: 1; }
+        .nav-links { display: flex; gap: 0.15rem; flex: 1; }
         .nav-links a {
             color: var(--text-muted);
             text-decoration: none;
             padding: 0.5rem 0.9rem;
-            border-radius: 0.5rem;
+            border-radius: var(--radius-sm);
             font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            font-size: 0.9rem;
+            transition: all var(--transition);
         }
         .nav-links a:hover { background: var(--surface-hover); color: var(--text); }
         .nav-links a.active { background: var(--teal-glow); color: var(--teal); }
+        .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 0.4rem; }
+        .hamburger svg { width: 24px; height: 24px; stroke: var(--text); }
         /* Language toggle */
         .lang-toggle {
             display: flex;
@@ -90,18 +108,27 @@
         .stat-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             padding: 1.25rem;
-            border-top: 3px solid var(--teal-dark);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
         }
-        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
-        .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--teal); margin-top: 0.3rem; }
+        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--teal-dark), var(--teal-light));
+        }
+        .stat-card .label { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 2.2rem; font-weight: 700; color: var(--teal); margin-top: 0.3rem; letter-spacing: -0.03em; }
         /* Tables */
-        .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; overflow: hidden; overflow-x: auto; }
+        .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; overflow-x: auto; box-shadow: var(--shadow-sm); }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.7rem 1rem; text-align: start; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        th { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        th, td { padding: 0.75rem 1rem; text-align: start; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; background: var(--surface-2); }
         tr:last-child td { border-bottom: none; }
+        tr { transition: background var(--transition); }
         tr:hover td { background: var(--surface-hover); }
         /* Badges */
         .badge { padding: 0.2rem 0.6rem; border-radius: 0.4rem; font-size: 0.75rem; font-weight: 600; display: inline-block; }
@@ -116,12 +143,13 @@
         .badge-paused { background: rgba(251,191,36,0.2); color: var(--amber); }
         .badge-completed { background: rgba(45,212,191,0.2); color: var(--teal); }
         /* Buttons */
-        .btn { padding: 0.4rem 0.8rem; border-radius: 0.4rem; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.2s; }
-        .btn-teal { background: var(--teal-dark); color: var(--bg); }
-        .btn-teal:hover { background: var(--teal); }
-        .btn-outline { background: transparent; color: var(--teal); border: 1px solid var(--teal-dark); }
-        .btn-outline:hover { background: var(--teal-glow); }
+        .btn { padding: 0.45rem 0.85rem; border-radius: var(--radius-sm); border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; transition: all var(--transition); }
+        .btn-teal { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); color: var(--bg); }
+        .btn-teal:hover { box-shadow: 0 4px 12px rgba(45,212,191,0.3); transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--teal); border: 1px solid var(--border-light); }
+        .btn-outline:hover { background: var(--teal-glow); border-color: var(--teal-dark); }
         .btn-red { background: var(--red); color: var(--bg); }
+        .btn-red:hover { opacity: 0.85; }
         /* Filter bar */
         .filter-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
         .filter-bar select, .filter-bar input {
@@ -135,39 +163,56 @@
         }
         /* Campaign cards */
         .campaign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-        .campaign-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; border-top: 3px solid var(--teal-dark); }
+        .campaign-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow-sm); transition: all var(--transition); position: relative; overflow: hidden; }
+        .campaign-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .campaign-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal-dark), var(--teal-light)); }
         .campaign-card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
         .campaign-stats { display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted); }
         .campaign-stats span strong { color: var(--text); }
         /* Form */
-        .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.25rem; max-width: 480px; }
-        .form-card label { display: block; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; margin-top: 0.75rem; }
-        .form-card input, .form-card select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.9rem; font-family: inherit; }
+        .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; max-width: 480px; box-shadow: var(--shadow-sm); }
+        .form-card label { display: block; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; margin-top: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .form-card input, .form-card select { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem; font-size: 0.9rem; font-family: inherit; transition: all var(--transition); }
+        .form-card input:focus, .form-card select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
         /* Progress bar */
-        .progress-bar { background: var(--bg); border-radius: 0.5rem; height: 1.75rem; overflow: hidden; position: relative; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal-dark), var(--teal)); border-radius: 0.5rem; display: flex; align-items: center; padding-inline-start: 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--bg); transition: width 0.5s; }
+        .progress-bar { background: var(--bg); border-radius: var(--radius-sm); height: 2rem; overflow: hidden; position: relative; border: 1px solid var(--border); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--teal-dark), var(--teal-light)); border-radius: var(--radius-sm); display: flex; align-items: center; padding-inline-start: 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--bg); transition: width 0.5s ease; }
         /* CSS bar chart */
         .bar-chart { display: flex; flex-direction: column; gap: 0.5rem; }
         .bar-row { display: flex; align-items: center; gap: 0.75rem; }
         .bar-label { width: 120px; font-size: 0.85rem; color: var(--text-muted); text-align: end; flex-shrink: 0; }
         .bar-track { flex: 1; background: var(--bg); border-radius: 0.35rem; height: 1.5rem; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--teal-dark); border-radius: 0.35rem; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal-dark), var(--teal)); border-radius: 0.35rem; transition: width 0.6s ease; }
         .bar-value { width: 40px; font-size: 0.8rem; color: var(--text); font-weight: 600; }
         /* Pagination */
         .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.25rem; align-items: center; }
-        .pagination a, .pagination span { padding: 0.4rem 0.7rem; border-radius: 0.4rem; text-decoration: none; font-size: 0.85rem; }
-        .pagination a { background: var(--surface); color: var(--teal); border: 1px solid var(--border); }
+        .pagination a, .pagination span { padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); text-decoration: none; font-size: 0.85rem; }
+        .pagination a { background: var(--surface); color: var(--teal); border: 1px solid var(--border); transition: all var(--transition); }
         .pagination a:hover { background: var(--surface-hover); }
-        .pagination .current { background: var(--teal-dark); color: var(--bg); font-weight: 600; }
-        .empty { color: var(--text-muted); text-align: center; padding: 2rem; font-style: italic; }
+        .pagination .current { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); color: var(--bg); font-weight: 600; }
+        .empty { color: var(--text-muted); text-align: center; padding: 2.5rem; font-style: italic; }
         .section { margin-bottom: 2rem; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } .nav-links { flex-wrap: wrap; } }
+        h1 { font-size: 1.6rem; margin-bottom: 1.2rem; color: var(--text); font-weight: 700; letter-spacing: -0.02em; }
+        h2 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .filter-bar select, .filter-bar input { transition: all var(--transition); }
+        .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-glow); }
+        @media (max-width: 768px) {
+            .two-col { grid-template-columns: 1fr; }
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); padding: 0.5rem; border-bottom: 1px solid var(--border); }
+            .nav-links.open { display: flex; }
+            .hamburger { display: block; }
+            main { padding: 1rem; }
+            .stat-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <a href="/dashboard?lang={{ lang }}" class="brand">{{ t('brand', lang) }}</a>
+        <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div class="nav-links">
             <a href="/dashboard?lang={{ lang }}" class="{% if active == 'dashboard' %}active{% endif %}">{{ t('dashboard', lang) }}</a>
             <a href="/businesses-page?lang={{ lang }}" class="{% if active == 'businesses' %}active{% endif %}">{{ t('businesses', lang) }}</a>

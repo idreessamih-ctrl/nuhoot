@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>{{ t('campaigns', lang) }}</h1>
+<h1>📣 {{ t('campaigns', lang) }}</h1>
 
 <div class="section">
-    <h2>{{ t('create_campaign', lang) }}</h2>
+    <h2>➕ {{ t('create_campaign', lang) }}</h2>
     <form class="form-card" method="POST" action="/campaigns">
         <label>{{ t('campaign_name', lang) }}</label>
         <input type="text" name="name" required>
@@ -24,7 +24,7 @@
 </div>
 
 <div class="section">
-    <h2>{{ t('campaigns', lang) }}</h2>
+    <h2>📋 {{ t('campaigns', lang) }}</h2>
     {% if campaigns %}
     <div class="campaign-grid">
         {% for camp in campaigns %}
