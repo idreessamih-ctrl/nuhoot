@@ -17,6 +17,9 @@ import requests
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw
+from photo_db import (
+    get_photo_catalog_text, resolve_photo_id, mark_used, record_composite,
+)
 
 # ─── Config ─────────────────────────────────────────────────
 API_KEY = "sk-WxllgGhf4ZGSfEJ75mJYyDwjuVKP9SlrAP03m4_SUQs"
@@ -333,6 +336,25 @@ def normalize_blueprint(blueprint):
                     for key in list(props.keys()):
                         if key.startswith("photoPath"):
                             del props[key]
+        # Resolve photo IDs → file paths
+        niche = blueprint.get("_niche", "")
+        if comp in SRC_PHOTOS:
+            src_val = props.get("src", "")
+            if src_val and not src_val.startswith("photos/") and not src_val.startswith("/"):
+                resolved = resolve_photo_id(src_val, niche)
+                props["src"] = resolved
+                mark_used(src_val)
+        if comp in ARRAY_PHOTOS:
+            photo_list = props.get("photos", [])
+            resolved_list = []
+            for pid in photo_list:
+                if pid and not pid.startswith("photos/") and not pid.startswith("/"):
+                    resolved = resolve_photo_id(pid, niche)
+                    resolved_list.append(resolved)
+                    mark_used(pid)
+                else:
+                    resolved_list.append(pid)
+            props["photos"] = resolved_list
         # FooterComplete: remove businessName (not a valid prop)
         if comp == "FooterComplete":
             props.pop("businessName", None)
@@ -417,12 +439,14 @@ BUSINESS CONTEXT:
 - Photo: {photo_path}
 - Target audience: {gender} — use "{gender_word}" for addressing
 
+{get_photo_catalog_text(niche)}
+
 {COMPONENT_CATALOG}
 
 MANDATORY DESIGN ASSIGNMENT (follow these exactly):
 - LAYOUT: Use {assigned_layout} as your design structure
 - HEADER: Use {assigned_header} component (font: {assigned_font})
-- PHOTO: Use {assigned_photo} component with src="photos/{niche}.jpg"
+- PHOTO: Use {assigned_photo} component. Set src to a photo ID from the AVAILABLE PHOTOS list above (e.g. "src": "restaurants_01"). For PhotoGrid/Mosaic/FrameStack, set "photos" to an array of 2-3 IDs.
 - PATTERN: Include {assigned_pattern} as a decorative background
 - CTA: Use {assigned_cta} component
 - DECORATIVE: Include {recommended_decorative}
@@ -448,7 +472,7 @@ DESIGN RULES (CRITICAL — follow ALL):
 5. Colors: backgroundColor="{colors['bg']}", primaryColor="{colors['accent']}", accentColor="{colors['accent2']}", color="#FFFFFF"
    - Background MUST be dark (between #0A0A0A and #2A2A3A). Light backgrounds FAIL.
 6. Headlines under 60 chars, CTAs under 35 chars
-7. For photos use "src" prop (NOT photoPath): "src": "photos/{niche}.jpg"
+7. For photos use "src" prop with a photo ID from the AVAILABLE PHOTOS list (e.g. "src": "restaurants_01"). Do NOT use "photos/{niche}.jpg" directly — always pick an ID.
 8. Set gradientAngle to {gradient_angle} in globalStyles
 
 ARABIC GENDER RULES:
@@ -622,6 +646,7 @@ def run_pipeline(niches=None):
                 else:
                     break
             
+            blueprint["_niche"] = niche  # for photo ID resolution
             comp_count = len(blueprint.get("composition", []))
             pattern = blueprint.get("designPattern", "unknown")
             print(f"  ✓ Pattern: {pattern}, Components: {comp_count}")
@@ -631,6 +656,39 @@ def run_pipeline(niches=None):
             best_blueprint = blueprint
             time.sleep(2)
             
+            # Step 1.5: Photo compositing + enhancement (NEW)
+            print("  [1.5] Processing photos...")
+            from photo_compositor import composite_photos
+            from photo_enhancer import enhance_photo
+            ad_id = f"{niche}_iter{iteration}"
+
+            for block in blueprint.get("composition", []):
+                comp = block.get("component", "")
+                props = block.get("props", {})
+
+                # Multi-photo components → composite into single image
+                if comp in ("PhotoGrid", "PhotoMosaic", "FrameStack"):
+                    photo_ids = props.get("photos", [])
+                    if len(photo_ids) >= 2:
+                        comp_path = composite_photos(photo_ids, niche, ad_id)
+                        if comp_path:
+                            block["component"] = "PhotoSingle"
+                            block["props"] = {"src": comp_path, "showOverlay": True}
+                            record_composite(ad_id, niche, comp_path,
+                                            photo_ids, comp, ad_id)
+                            abs_comp = os.path.join("/opt/nuhoot/remotion/public", comp_path)
+                            enhance_photo(abs_comp, do_upscale=False, do_face=True)
+
+                # Single-photo components → enhance
+                elif comp in ("PhotoSingle", "PhotoFrame", "PhotoArch", "PhotoCircle",
+                              "PhotoDiagonal", "PhotoDuotone", "PhotoDoubleFrame",
+                              "FramePolaroid", "FrameCircle", "HeaderOverlay"):
+                    src = props.get("src", "")
+                    if src and src.startswith("photos/"):
+                        abs_src = os.path.join("/opt/nuhoot/remotion/public", src)
+                        if os.path.exists(abs_src):
+                            enhance_photo(abs_src, do_upscale=False, do_face=True)
+
             # Step 2: Render with DynamicComposer
             print("  [2] Rendering with DynamicComposer...")
             render_path = f"{RENDER_DIR}/{niche}_iter{iteration}.png"
