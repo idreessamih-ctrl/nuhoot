@@ -647,6 +647,7 @@ def run_pipeline(niches=None):
                     break
             
             blueprint["_niche"] = niche  # for photo ID resolution
+            blueprint = normalize_blueprint(blueprint)  # resolve photo IDs → file paths BEFORE compositing
             comp_count = len(blueprint.get("composition", []))
             pattern = blueprint.get("designPattern", "unknown")
             print(f"  ✓ Pattern: {pattern}, Components: {comp_count}")
