@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import func, select
@@ -52,10 +52,14 @@ class MessageResponse(BaseModel):
 @router.post("/{business_id}/send", response_model=None)
 def send_business_pitch(
     business_id: int,
+    request: Request,
     db: DbDep,
     lang: str = Form("ar"),
 ) -> dict[str, object] | JSONResponse | RedirectResponse:
-    """Send the latest pitch to a business via WhatsApp."""
+    """Send the latest pitch to a business via WhatsApp.
+
+    Returns JSON for API calls; redirects to businesses page for form posts.
+    """
     biz = db.get(Business, business_id)
     if biz is None:
         return JSONResponse(
@@ -77,7 +81,9 @@ def send_business_pitch(
             status_code=500,
             content={"success": False, "data": None, "error": str(exc)},
         )
-    return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=sent", status_code=303)
+    if request.headers.get("accept", "").startswith("text/html"):
+        return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=sent", status_code=303)
+    return {"success": True, "data": MessageResponse.model_validate(message), "error": None}
 
 
 @router.get("/{business_id}/messages", response_model=None)

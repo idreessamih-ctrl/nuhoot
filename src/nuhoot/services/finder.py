@@ -242,6 +242,24 @@ class FinderService:
         website = str(website_raw).strip() if website_raw else None
         has_website = bool(website)
 
+        # Extract Google Maps photos (gosom outputs an "images" array)
+        gosom_images = entry.get("images", [])
+        photo_urls = []
+        if isinstance(gosom_images, list):
+            for img in gosom_images:
+                if isinstance(img, dict) and img.get("image"):
+                    photo_urls.append({
+                        "title": str(img.get("title", "")),
+                        "url": str(img["image"]),
+                    })
+        # Also capture thumbnail if present
+        thumb = entry.get("thumbnail")
+        if thumb and not any(p["url"] == thumb for p in photo_urls):
+            photo_urls.insert(0, {"title": "thumbnail", "url": str(thumb)})
+
+        # Extract place_id
+        place_id = str(entry.get("place_id", "")) or None
+
         return Business(
             name=title,
             category=category,
@@ -253,6 +271,8 @@ class FinderService:
             review_count=_safe_int(entry.get("review_count")) or 0,
             latitude=_safe_float(entry.get("latitude")),
             longitude=_safe_float(entry.get("longitude")),
+            photo_urls=photo_urls if photo_urls else None,
+            place_id=place_id,
         )
 
     def _normalize_phone(self, phone: object | None) -> str | None:

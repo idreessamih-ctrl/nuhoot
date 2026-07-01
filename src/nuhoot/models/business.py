@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from nuhoot.database import Base
@@ -32,6 +32,10 @@ class Business(Base):
     has_instagram: Mapped[bool] = mapped_column(insert_default=False)
     seo_score: Mapped[int | None] = mapped_column(Integer)
     social_score: Mapped[int | None] = mapped_column(Integer)
+
+    # Google Maps photos (list of {title, url} dicts from gosom)
+    photo_urls: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    place_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     # Status tracking
     status: Mapped[str] = mapped_column(String(50), insert_default="found")

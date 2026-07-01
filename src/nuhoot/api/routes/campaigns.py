@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -47,6 +47,7 @@ def create_campaign(
 @router.post("/{campaign_id}/send", response_model=None)
 def send_campaign_pitches(
     campaign_id: int,
+    request: Request,
     db: DbDep,
     lang: str = Form("ar"),
 ) -> dict[str, object] | JSONResponse | RedirectResponse:
@@ -55,6 +56,8 @@ def send_campaign_pitches(
     Iterates over every business linked to the campaign, finds its latest
     pitch, and sends it via WhatsApp. Businesses without a pitch are counted
     as failed. Rate limiting is handled inside SenderService.
+
+    Returns JSON for API calls; redirects to campaigns page for form posts.
     """
     campaign = db.get(Campaign, campaign_id)
     if campaign is None:
@@ -88,7 +91,9 @@ def send_campaign_pitches(
             failed += 1
 
     result = BatchSendResult(sent=sent, failed=failed, total=len(businesses))
-    return RedirectResponse(
-        url=f"/campaigns-page?lang={lang}&msg=sent-{sent}-{failed}-{len(businesses)}",
-        status_code=303,
-    )
+    if request.headers.get("accept", "").startswith("text/html"):
+        return RedirectResponse(
+            url=f"/campaigns-page?lang={lang}&msg=sent-{sent}-{failed}-{len(businesses)}",
+            status_code=303,
+        )
+    return {"success": True, "data": result, "error": None}

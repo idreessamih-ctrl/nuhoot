@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     scraper_max_results: int = 200
     scraper_delay_seconds: int = 2
 
+    # Satori render script (HTML→SVG→PNG image generation)
+    design_dir: str = "/opt/nuhoot/design"
+    render_output_dir: str = "/tmp/nuhoot"
+
     # App
     app_env: str = "development"
     app_secret_key: str = "change-this-in-production"

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Any, Annotated
 
-from fastapi import APIRouter, Depends, Form
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
@@ -17,6 +17,7 @@ from nuhoot.models.pitch import Pitch
 from nuhoot.services.crafter import CrafterError, CrafterService
 from nuhoot.services.finder import FinderError, FinderService
 from nuhoot.services.investigator import InvestigatorService
+from nuhoot.services.renderer import RendererError, RendererService
 
 router = APIRouter(prefix="/businesses", tags=["businesses"])
 
@@ -61,14 +62,15 @@ class BusinessResponse(BaseModel):
 
 
 class PitchResponse(BaseModel):
-    """Serialized pitch — AI-generated WhatsApp message + sample posts."""
+    """Serialized pitch — AI-generated WhatsApp message + sample posts + rendered images."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     business_id: int
     pitch_text: str
-    sample_posts: list[str]
+    sample_posts: list[Any]  # Crafter returns dicts: {"caption": "...", "hashtags": [...]}
+    image_posts: list[Any] = []  # Renderer returns dicts: {"caption", "image_path", "template", "niche"}
     language: str = "ar"
     status: str = "draft"
 
@@ -163,10 +165,14 @@ def get_business(
 @router.post("/{business_id}/investigate", response_model=None)
 def investigate_business(
     business_id: int,
+    request: Request,
     db: DbDep,
     lang: str = Form("ar"),
 ) -> dict[str, object] | JSONResponse | RedirectResponse:
-    """Trigger digital presence investigation for a business."""
+    """Trigger digital presence investigation for a business.
+
+    Returns JSON for API calls; redirects to businesses page for form posts.
+    """
     biz = db.get(Business, business_id)
     if biz is None:
         return JSONResponse(
@@ -175,16 +181,22 @@ def investigate_business(
         )
     service = InvestigatorService(db)
     service.investigate(biz)
-    return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=investigated", status_code=303)
+    if request.headers.get("accept", "").startswith("text/html"):
+        return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=investigated", status_code=303)
+    return {"success": True, "data": BusinessResponse.model_validate(biz), "error": None}
 
 
 @router.post("/{business_id}/craft", response_model=None)
 def craft_business_pitch(
     business_id: int,
+    request: Request,
     db: DbDep,
     lang: str = Form("ar"),
 ) -> dict[str, object] | JSONResponse | RedirectResponse:
-    """Generate an AI pitch for a business using GLM 5.2."""
+    """Generate an AI pitch for a business using GLM 5.2.
+
+    Returns JSON for API calls; redirects to businesses page for form posts.
+    """
     biz = db.get(Business, business_id)
     if biz is None:
         return JSONResponse(
@@ -199,7 +211,21 @@ def craft_business_pitch(
             status_code=500,
             content={"success": False, "data": None, "error": str(exc)},
         )
-    return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=crafted", status_code=303)
+    # Render branded images for each sample post via Satori
+    try:
+        renderer = RendererService()
+        pitch.image_posts = renderer.render_posts(pitch, biz)
+    except RendererError as exc:
+        # Pitch was created but image rendering failed — log and continue
+        import structlog
+        structlog.get_logger().warning(
+            "craft.render_failed",
+            pitch_id=pitch.id,
+            error=str(exc),
+        )
+    if request.headers.get("accept", "").startswith("text/html"):
+        return RedirectResponse(url=f"/businesses-page?lang={lang}&msg=crafted", status_code=303)
+    return {"success": True, "data": PitchResponse.model_validate(pitch), "error": None}
 
 
 @router.get("/{business_id}/pitch", response_model=None)

@@ -9,6 +9,7 @@ from nuhoot.models.business import Business
 from nuhoot.models.pitch import Pitch
 from nuhoot.services.crafter import CrafterError, CrafterService
 from nuhoot.services.finder import FinderService
+from nuhoot.services.renderer import RendererService
 
 
 def _sample_gosom_output() -> str:
@@ -258,7 +259,8 @@ class TestCraftBusinessPitch:
         biz_id = biz.id
 
         mock_pitch = _make_pitch(biz_id)
-        with patch.object(CrafterService, "craft_pitch", return_value=mock_pitch):
+        with patch.object(CrafterService, "craft_pitch", return_value=mock_pitch), \
+             patch.object(RendererService, "render_posts", return_value=[]):
             response = client.post(f"/businesses/{biz_id}/craft")
 
         assert response.status_code == 200

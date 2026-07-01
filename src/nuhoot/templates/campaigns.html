@@ -11,10 +11,26 @@
         <label>{{ t('niche', lang) }}</label>
         <select name="niche">
             <option value="restaurants">{{ t('niche_restaurants', lang) }}</option>
+            <option value="cafes">مقاهي / Cafes</option>
+            <option value="bakeries">مخابز / Bakeries</option>
             <option value="clinics">{{ t('niche_clinics', lang) }}</option>
+            <option value="dentists">عيادات أسنان / Dentists</option>
+            <option value="pharmacies">صيدليات / Pharmacies</option>
+            <option value="dermatology">مراكز جلدية / Dermatology</option>
             <option value="salons">{{ t('niche_salons', lang) }}</option>
+            <option value="barbershops">حلاقة رجالية / Barbershops</option>
+            <option value="spas">سبا / Spas</option>
             <option value="real_estate">{{ t('niche_real_estate', lang) }}</option>
             <option value="auto_shops">{{ t('niche_auto_shops', lang) }}</option>
+            <option value="car_wash">غسيل سيارات / Car Wash</option>
+            <option value="gyms">جيم / Gyms</option>
+            <option value="hvac_ac">صيانة مكيفات / HVAC</option>
+            <option value="cleaning">شركات تنظيف / Cleaning</option>
+            <option value="training_centers">مراكز تدريب / Training</option>
+            <option value="event_halls">قاعات مناسبات / Event Halls</option>
+            <option value="perfumes">عطور / Perfumes</option>
+            <option value="fashion">أزياء / Fashion</option>
+            <option value="law_firms">مكاتب محاماة / Law Firms</option>
         </select>
         <label>{{ t('city', lang) }}</label>
         <input type="text" name="city" value="{{ 'الرياض' if lang == 'ar' else 'Riyadh' }}">

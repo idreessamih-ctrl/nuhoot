@@ -61,3 +61,7 @@ credentials.json
 service-account.json
 *.pem
 *.key
+remotion/node_modules/
+node_modules/
+*.pack
+video-engine/node_modules/
