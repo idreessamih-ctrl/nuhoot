@@ -1013,6 +1013,7 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
 }) => {
   const c = useColors(colors);
   const rtl = rtlProps(headline);
+  const goldColor = c.accentGlint || c.accent;
 
   return (
     <div style={{
@@ -1020,20 +1021,69 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
       background: `linear-gradient(${c.gradientAngle || 180}deg, ${c.bg2}, ${c.bg})`,
       fontFamily: FONTS.naskh,
     }}>
-      {/* Subtle decorative line — top */}
+      {/* Subtle dot pattern background */}
       <div style={{
-        position: 'absolute', top: 60, left: '50%',
+        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+        backgroundImage: `radial-gradient(${hexRgba(goldColor, '0.06')} 1px, transparent 1px)`,
+        backgroundSize: '30px 30px',
+        zIndex: 0,
+      }} />
+
+      {/* Decorative gold lines — top frame */}
+      <div style={{
+        position: 'absolute', top: 40, left: '50%',
         transform: 'translateX(-50%)',
-        width: 120, height: 1,
-        background: hexRgba(c.accentGlint || c.accent, '0.6'),
+        width: 200, height: 1,
+        background: hexRgba(goldColor, '0.5'),
+        zIndex: 1,
+      }} />
+      <div style={{
+        position: 'absolute', top: 48, left: '50%',
+        transform: 'translateX(-50%)',
+        width: 80, height: 1,
+        background: hexRgba(goldColor, '0.8'),
+        zIndex: 1,
+      }}
+      />
+
+      {/* Islamic geometric corner ornaments — TOP LEFT */}
+      <div style={{
+        position: 'absolute', top: 30, left: 30,
+        width: 60, height: 60, zIndex: 2,
+        borderTop: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderLeft: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderRadius: '8px 0 0 0',
+      }} />
+      <div style={{
+        position: 'absolute', top: 40, left: 40,
+        width: 30, height: 30, zIndex: 2,
+        borderTop: `1px solid ${hexRgba(goldColor, '0.6')}`,
+        borderLeft: `1px solid ${hexRgba(goldColor, '0.6')}`,
+        borderRadius: '4px 0 0 0',
+      }} />
+
+      {/* Islamic geometric corner ornaments — TOP RIGHT */}
+      <div style={{
+        position: 'absolute', top: 30, right: 30,
+        width: 60, height: 60, zIndex: 2,
+        borderTop: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderRight: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderRadius: '0 8px 0 0',
+      }} />
+      <div style={{
+        position: 'absolute', top: 40, right: 40,
+        width: 30, height: 30, zIndex: 2,
+        borderTop: `1px solid ${hexRgba(goldColor, '0.6')}`,
+        borderRight: `1px solid ${hexRgba(goldColor, '0.6')}`,
+        borderRadius: '0 4px 0 0',
       }} />
 
       {/* Kicker — centered, small, elegant */}
       {kicker && (
         <div style={{
-          position: 'absolute', top: 80, left: 0, right: 0,
-          textAlign: 'center',
-          fontSize: 22, color: c.accentGlint || c.accent,
+          position: 'absolute', top: 75, left: 0, right: 0,
+          textAlign: 'center', zIndex: 3,
+          fontSize: 22, color: goldColor,
           fontWeight: 500, letterSpacing: '0.15em',
         }}>
           {kicker}
@@ -1043,32 +1093,94 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
       {/* Arch-shaped photo — center, premium */}
       {photoPath && (
         <div style={{
-          position: 'absolute', top: 140, left: '50%',
+          position: 'absolute', top: 130, left: '50%',
           transform: 'translateX(-50%)',
-          width: 420, height: 480,
-          borderRadius: '210px 210px 0 0', // Arch shape
+          width: 420, height: 480, zIndex: 2,
+          borderRadius: '210px 210px 0 0',
           overflow: 'hidden',
-          border: `2px solid ${hexRgba(c.accentGlint || c.accent, '0.3')}`,
-          boxShadow: depthShadow('subtle'),
+          border: `2px solid ${hexRgba(goldColor, '0.4')}`,
+          boxShadow: depthShadow('medium'),
         }}>
           <img src={resolvePhoto(photoPath)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           {/* Gold frame inside arch */}
           <div style={{
             position: 'absolute', inset: 8,
             borderRadius: '200px 200px 0 0',
-            border: `1px solid ${hexRgba(c.accentGlint || c.accent, '0.4')}`,
+            border: `1px solid ${hexRgba(goldColor, '0.5')}`,
+          }} />
+          {/* Gradient overlay at bottom of arch for depth */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, width: '100%', height: '30%',
+            background: `linear-gradient(to top, ${hexRgba(c.bg, '0.5')}, transparent)`,
           }} />
         </div>
       )}
 
+      {/* Decorative shapes flanking the arch — LEFT */}
+      <div style={{
+        position: 'absolute', top: 300, left: 80,
+        width: 4, height: 120, zIndex: 1,
+        background: `linear-gradient(to bottom, transparent, ${hexRgba(goldColor, '0.4')}, transparent)`,
+      }} />
+      <div style={{
+        position: 'absolute', top: 280, left: 100,
+        width: 12, height: 12, zIndex: 1,
+        border: `1.5px solid ${hexRgba(goldColor, '0.5')}`,
+        transform: 'rotate(45deg)',
+      }} />
+      <div style={{
+        position: 'absolute', top: 430, left: 100,
+        width: 8, height: 8, zIndex: 1,
+        background: hexRgba(goldColor, '0.4'),
+        transform: 'rotate(45deg)',
+      }}
+
+      />
+
+      {/* Decorative shapes flanking the arch — RIGHT */}
+      <div style={{
+        position: 'absolute', top: 300, right: 80,
+        width: 4, height: 120, zIndex: 1,
+        background: `linear-gradient(to bottom, transparent, ${hexRgba(goldColor, '0.4')}, transparent)`,
+      }} />
+      <div style={{
+        position: 'absolute', top: 280, right: 100,
+        width: 12, height: 12, zIndex: 1,
+        border: `1.5px solid ${hexRgba(goldColor, '0.5')}`,
+        transform: 'rotate(45deg)',
+      }} />
+      <div style={{
+        position: 'absolute', top: 430, right: 100,
+        width: 8, height: 8, zIndex: 1,
+        background: hexRgba(goldColor, '0.4'),
+        transform: 'rotate(45deg)',
+      }} />
+
+      {/* Bottom corner ornaments — LEFT */}
+      <div style={{
+        position: 'absolute', bottom: 100, left: 30,
+        width: 60, height: 60, zIndex: 2,
+        borderBottom: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderLeft: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderRadius: '0 0 0 8px',
+      }} />
+      {/* Bottom corner ornaments — RIGHT */}
+      <div style={{
+        position: 'absolute', bottom: 100, right: 30,
+        width: 60, height: 60, zIndex: 2,
+        borderBottom: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderRight: `2px solid ${hexRgba(goldColor, '0.4')}`,
+        borderRadius: '0 0 8px 0',
+      }} />
+
       {/* Headline — centered below arch, elegant */}
       {headline && (
         <div style={{
-          position: 'absolute', top: 660, left: 50, right: 50,
+          position: 'absolute', top: 640, left: 60, right: 60, zIndex: 3,
           textAlign: 'center',
-          fontSize: 52, fontWeight: 700, color: c.text,
+          fontSize: 48, fontWeight: 700, color: c.text,
           lineHeight: 1.2, direction: rtl.direction,
-          fontFamily: FONTS.naskh,
+          fontFamily: FONTS.kufi,
         }}>
           {headline}
         </div>
@@ -1077,11 +1189,12 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
       {/* Business name — gold accent */}
       {businessName && (
         <div style={{
-          position: 'absolute', top: 740, left: 0, right: 0,
+          position: 'absolute', top: 720, left: 0, right: 0, zIndex: 3,
           textAlign: 'center',
           fontSize: 28, fontWeight: 600,
-          color: c.accentGlint || c.accent,
+          color: goldColor,
           direction: rtl.direction,
+          fontFamily: FONTS.kufi,
         }}>
           {businessName}
         </div>
@@ -1090,15 +1203,15 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
       {/* Taglines — centered, inline with separator */}
       {taglines.length > 0 && (
         <div style={{
-          position: 'absolute', top: 800, left: 0, right: 0,
-          display: 'flex', justifyContent: 'center', gap: 20,
+          position: 'absolute', top: 775, left: 0, right: 0, zIndex: 3,
+          display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap',
           direction: rtl.direction,
         }}>
           {taglines.slice(0, 3).map((tag, i) => (
             <React.Fragment key={i}>
-              {i > 0 && <span style={{ color: hexRgba(c.accent, '0.3'), fontSize: 18 }}>·</span>}
+              {i > 0 && <span style={{ color: hexRgba(goldColor, '0.4'), fontSize: 16 }}>◆</span>}
               <span style={{
-                fontSize: 20, color: hexRgba(c.text, '0.7'), fontWeight: 400,
+                fontSize: 18, color: hexRgba(c.text, '0.7'), fontWeight: 400,
               }}>
                 {tag}
               </span>
@@ -1107,40 +1220,42 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
         </div>
       )}
 
-      {/* CTA — minimal outline button */}
+      {/* CTA — minimal outline button with gold accents */}
       {ctaText && (
         <div style={{
-          position: 'absolute', top: 870, left: '50%',
-          transform: 'translateX(-50%)',
-          border: `1.5px solid ${c.accent}`,
-          padding: '12px 40px', borderRadius: 0, // Sharp corners = luxury
-          fontSize: 22, fontWeight: 600, color: c.accent,
+          position: 'absolute', top: 840, left: '50%',
+          transform: 'translateX(-50%)', zIndex: 3,
+          border: `1.5px solid ${goldColor}`,
+          padding: '12px 36px',
+          fontSize: 20, fontWeight: 600, color: goldColor,
           background: 'transparent',
           letterSpacing: '0.05em',
+          fontFamily: FONTS.kufi,
         }}>
-          {truncateCta(ctaText, 30)}
+          {truncateCta(ctaText, 45)}
         </div>
       )}
 
-      {/* Rating — minimal, centered */}
+      {/* Rating — minimal, centered (stars only, no duplicate) */}
       <div style={{
-        position: 'absolute', top: 940, left: 0, right: 0,
+        position: 'absolute', top: 905, left: 0, right: 0, zIndex: 3,
         display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8,
       }}>
-        <span style={{ color: c.accentGlint || '#FFD700', fontSize: 18 }}>
+        <span style={{ color: goldColor, fontSize: 16 }}>
           {'★'.repeat(Math.round(rating))}
         </span>
-        <span style={{ color: hexRgba(c.text, '0.6'), fontSize: 18 }}>
-          {toArabicDigits(rating)} · {toArabicDigits(ratingCount)} تقييم
+        <span style={{ color: hexRgba(c.text, '0.5'), fontSize: 16 }}>
+          {toArabicDigits(rating)}
         </span>
       </div>
 
       {/* Trust badge — minimal */}
       {trustBadge && (
         <div style={{
-          position: 'absolute', top: 975, left: 0, right: 0,
+          position: 'absolute', top: 935, left: 0, right: 0, zIndex: 3,
           textAlign: 'center',
-          fontSize: 16, color: hexRgba(c.accent, '0.5'),
+          fontSize: 15, color: hexRgba(goldColor, '0.6'),
+          fontFamily: FONTS.kufi,
         }}>
           {trustBadge}
         </div>
@@ -1149,24 +1264,24 @@ export const MinimalLuxury: React.FC<DramaticProps> = ({
       {/* Hashtags — very subtle */}
       {hashtags.length > 0 && (
         <div style={{
-          position: 'absolute', bottom: 60, left: 0, right: 0,
+          position: 'absolute', bottom: 55, left: 0, right: 0, zIndex: 3,
           textAlign: 'center',
-          fontSize: 14, color: hexRgba(c.accent, '0.3)'),
+          fontSize: 13, color: hexRgba(goldColor, '0.3)'),
         }}>
           {hashtags.slice(0, 3).join('  ·  ')}
         </div>
       )}
 
-      {/* Footer — minimal */}
+      {/* Footer — minimal, use Kufi font to fix garbled text */}
       <div style={{
-        position: 'absolute', bottom: 20, left: 0, right: 0,
+        position: 'absolute', bottom: 18, left: 0, right: 0, zIndex: 3,
         display: 'flex', justifyContent: 'space-between',
         padding: '0 50px',
       }}>
-        <span style={{ color: hexRgba(c.accentGlint || c.accent, '0.6'), fontSize: 14, fontWeight: 500 }}>
+        <span style={{ color: hexRgba(goldColor, '0.5'), fontSize: 13, fontWeight: 500, fontFamily: FONTS.kufi }}>
           نُهوت — التسويق الرقمي
         </span>
-        <span style={{ color: hexRgba('#fff', '0.3'), fontSize: 14 }}>
+        <span style={{ color: hexRgba('#fff', '0.3'), fontSize: 13, fontFamily: FONTS.lato }}>
           nuhoot.xyz
         </span>
       </div>
