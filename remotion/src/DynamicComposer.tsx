@@ -24,6 +24,8 @@ import {
   DEFAULT_COLORS,
 } from './components';
 import type { ColorConfig } from './components';
+import { DRAMATIC_LAYOUTS } from './components/dramatic_layouts';
+import type { DramaticProps } from './components/dramatic_layouts';
 
 // ─── Blueprint Types ─────────────────────────────────────────────────
 // The JSON contract that Kimi (the designer LLM) produces. These types
@@ -87,6 +89,10 @@ export interface DesignBlueprint {
   globalStyles?: GlobalStyles;
   /** Optional Arabic copy metadata (not rendered directly). */
   arabicCopy?: Record<string, any>;
+  /** If set, render a dramatic layout instead of composing blocks. */
+  dramaticLayout?: string;
+  /** Content props for the dramatic layout. */
+  dramaticContent?: Partial<DramaticProps>;
 }
 
 /**
@@ -389,6 +395,29 @@ const RenderBlock: React.FC<RenderBlockProps> = ({ block, globalColors }) => {
 export const DynamicComposer: React.FC<DynamicComposerProps> = ({
   blueprint,
 }) => {
+  // 0. Check for dramatic layout — bypass block composition entirely.
+  if (blueprint.dramaticLayout && DRAMATIC_LAYOUTS[blueprint.dramaticLayout as keyof typeof DRAMATIC_LAYOUTS]) {
+    const LayoutComp = DRAMATIC_LAYOUTS[blueprint.dramaticLayout as keyof typeof DRAMATIC_LAYOUTS];
+
+    // Build ColorConfig from globalStyles.
+    const g = blueprint.globalStyles;
+    const globalColors = colorsFromGlobal(g);
+
+    // Merge dramaticContent with colors from globalStyles.
+    const contentProps: DramaticProps = {
+      ...(blueprint.dramaticContent || {}),
+      colors: globalColors,
+    };
+
+    return (
+      <AbsoluteFill style={{ overflow: 'hidden' }}>
+        <BlockBoundary id="dramatic">
+          <LayoutComp {...contentProps} />
+        </BlockBoundary>
+      </AbsoluteFill>
+    );
+  }
+
   // 1. Validate the blueprint structure.
   const { valid, errors } = validateBlueprint(blueprint);
   if (!valid) {

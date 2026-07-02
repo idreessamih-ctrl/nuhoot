@@ -434,3 +434,41 @@ NICHE_COLORS = {
     "event_halls": {"bg": "#100A14", "bg2": "#1A1024", "accent": "#D4AF37", "accent2": "#E056A0"},
     "training_centers": {"bg": "#0A0F15", "bg2": "#10182A", "accent": "#2E86AB", "accent2": "#FFD700"},
 }
+
+
+# ─── Dramatic Layout Assignments ─────────────────────────────────────
+# Each niche gets one of 6 dramatically different visual compositions.
+# These are STRUCTURALLY different layouts, not just different components.
+DRAMATIC_LAYOUTS = {
+    # HeroFullBleed — full-screen photo + text overlay (Netflix poster style)
+    "restaurants": "HeroFullBleed",
+    "cafes": "HeroFullBleed",
+    "bakeries": "HeroFullBleed",
+    # SplitScreen — 45% color block + 55% photo side by side
+    "salons": "SplitScreen",
+    "spas": "SplitScreen",
+    "dermatology": "SplitScreen",
+    # MagazineCover — photo 62% top, headline overlaps boundary
+    "fashion": "MagazineCover",
+    "perfumes": "MagazineCover",
+    "event_halls": "MagazineCover",
+    # BoldPoster — giant typography fills canvas, photo as small accent
+    "gyms": "BoldPoster",
+    "barbershops": "BoldPoster",
+    "auto_shops": "BoldPoster",
+    # OverlappingCards — cascading photos, text floats in negative space
+    "real_estate": "OverlappingCards",
+    "clinics": "OverlappingCards",
+    "dentists": "OverlappingCards",
+    "pharmacies": "OverlappingCards",
+    # MinimalLuxury — arch photo, gold accents, 60% negative space
+    "law_firms": "MinimalLuxury",
+    "cleaning": "MinimalLuxury",
+    "hvac_ac": "MinimalLuxury",
+    "car_wash": "MinimalLuxury",
+    "training_centers": "MinimalLuxury",
+}
+
+def get_dramatic_layout(niche: str) -> str:
+    """Get the assigned dramatic layout for a niche."""
+    return DRAMATIC_LAYOUTS.get(niche, "HeroFullBleed")

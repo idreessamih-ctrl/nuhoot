@@ -395,9 +395,116 @@ EXAMPLE_BLUEPRINT = """EXAMPLE BLUEPRINT format:
 """
 
 
+def generate_dramatic_blueprint(niche, business_name, rating, reviews, photo_path, feedback=None):
+    """Generate a dramatic layout blueprint — Kimi provides content, layout handles composition."""
+    from niche_config import get_niche_config, get_gender_for_niche, NICHE_COLORS, GENDER_TEXTS, get_dramatic_layout
+
+    config = get_niche_config(niche)
+    gender = config.get("gender", "plural")
+    gender_word = GENDER_TEXTS.get(gender, GENDER_TEXTS["plural"]).get("you_want", "تبون")
+    dramatic_layout = get_dramatic_layout(niche)
+    colors = NICHE_COLORS.get(niche, {"bg": "#1A1A2E", "bg2": "#16213E", "accent": "#E94560", "accent2": "#D4AF37"})
+    gradient_angle = config.get("gradient_angle", 135)
+
+    # Load existing captions as reference
+    with open(CAPTIONS_PATH) as f:
+        captions = json.load(f)
+    existing = captions.get(niche, {})
+
+    # Simpler prompt — Kimi generates TEXT CONTENT only, not component composition
+    prompt = f"""You are a Saudi social media copywriter. Create Arabic content for a {niche} ad.
+
+BUSINESS: {business_name}
+NICHE: {niche}
+CITY: Riyadh, Saudi Arabia
+RATING: {rating}/5 ({reviews} reviews)
+GENDER: {gender} — address them as "{gender_word}"
+LAYOUT STYLE: {dramatic_layout}
+
+Write authentic Saudi Arabic content. Output ONLY this JSON:
+{{
+  "kicker": "English kicker (2-4 words, UPPERCASE)",
+  "headline": "Arabic headline (bold, catchy, max 50 chars)",
+  "businessName": "Arabic business name",
+  "taglines": ["Arabic tagline 1", "Arabic tagline 2", "Arabic tagline 3"],
+  "bodyText": "One sentence Arabic description (max 80 chars, or empty string)",
+  "ctaText": "Arabic CTA button text (max 30 chars)",
+  "trustBadge": "Arabic trust badge (3-5 words)",
+  "hashtags": ["#arabic_hashtag1", "#arabic_hashtag2", "#arabic_hashtag3"]
+}}
+
+RULES:
+- Authentic Saudi dialect
+- Headline must be punchy and attention-grabbing
+- Taglines = 3 short benefits/features (max 25 chars each)
+- CTA = action verb (احجز/زورونا/اطلب/سجّلوا)
+- {gender_word} for "you want" — gender-specific
+
+Existing text for reference (improve it):
+{json.dumps(existing, ensure_ascii=False, indent=2)}
+"""
+    if feedback:
+        prompt += f"\n\nISSUES TO FIX:\n{feedback}\n\nOutput the fixed JSON only."
+
+    response = kimi_chat([
+        {"role": "system", "content": "You are a JSON-only content generator. Output ONLY a valid JSON object. No thinking, no explanation. Start with { and end with }."},
+        {"role": "user", "content": "Create content for a cafe ad. Kicker, headline, taglines, CTA."},
+        {"role": "assistant", "content": '{"kicker":"RIYADH · COFFEE","headline":"أفضل قهوة في الرياض","businessName":"قهوة الصباح","taglines":["حبوب مختارة بعناية","تحميص طازج يومياً","جلسة هادئة"],"bodyText":"مكانكم المفضل لقهوة الصباح","ctaText":"زورونا اليوم","trustBadge":"مختارة بعناية","hashtags":["#قهوة_الرياض","#صباح_الخير","#مقاهي"]}'},
+        {"role": "user", "content": prompt}
+    ], max_tokens=2000, temperature=0.4)
+
+    if not response:
+        return None
+
+    content = extract_json(response)
+    if not content or "headline" not in content:
+        print(f"    ⚠️ Content extraction failed. Raw: {response[:200]}")
+        return None
+
+    # Build the dramatic blueprint
+    blueprint = {
+        "designPattern": f"dramatic-{dramatic_layout.lower()}",
+        "dramaticLayout": dramatic_layout,
+        "composition": [],  # Not used for dramatic layouts
+        "globalStyles": {
+            "backgroundColor": colors["bg"],
+            "background": f"linear-gradient({gradient_angle}deg, {colors['bg']}, {colors['bg2']})",
+            "primaryColor": colors["accent"],
+            "accentColor": colors["accent2"],
+            "color": "#FFFFFF",
+            "direction": "rtl",
+            "gradientAngle": gradient_angle,
+        },
+        "dramaticContent": {
+            "kicker": content.get("kicker", ""),
+            "headline": content.get("headline", ""),
+            "businessName": content.get("businessName", business_name),
+            "taglines": content.get("taglines", [])[:3],
+            "bodyText": content.get("bodyText", ""),
+            "ctaText": content.get("ctaText", ""),
+            "rating": rating,
+            "ratingCount": reviews,
+            "hashtags": content.get("hashtags", [])[:4],
+            "trustBadge": content.get("trustBadge", ""),
+            "photoPath": photo_path,
+        },
+    }
+
+    # For OverlappingCards, try to get multiple photos
+    if dramatic_layout == "OverlappingCards":
+        from photo_db import get_photos_for_niche
+        photos = get_photos_for_niche(niche, limit=3)
+        if len(photos) >= 2:
+            blueprint["dramaticContent"]["photoPath"] = photos[0]
+            blueprint["dramaticContent"]["photoPath2"] = photos[1] if len(photos) > 1 else None
+            blueprint["dramaticContent"]["photoPath3"] = photos[2] if len(photos) > 2 else None
+
+    return blueprint
+
+
 def generate_blueprint(niche, business_name, rating, reviews, photo_path, feedback=None):
     """Have Kimi generate a complete design blueprint for a business."""
-    from niche_config import get_niche_config, get_gender_for_niche, NICHE_COLORS, GENDER_TEXTS
+    from niche_config import get_niche_config, get_gender_for_niche, NICHE_COLORS, GENDER_TEXTS, get_dramatic_layout
     
     config = get_niche_config(niche)
     gender = config.get("gender", "plural")
@@ -635,33 +742,43 @@ def run_pipeline(niches=None):
         for iteration in range(1, MAX_ITERATIONS + 1):
             print(f"\n  --- Iteration {iteration}/{MAX_ITERATIONS} ---")
             
-            # Step 1: Generate blueprint
-            print("  [1] Kimi generating design blueprint...")
-            blueprint = generate_blueprint(niche, business_name, rating, reviews, photo_path, feedback)
+            # Step 1: Generate blueprint (dramatic layout)
+            print("  [1] Kimi generating dramatic layout blueprint...")
+            blueprint = generate_dramatic_blueprint(niche, business_name, rating, reviews, photo_path, feedback)
             
             if not blueprint:
-                print("  ⚠️ Blueprint generation failed")
+                print("  ⚠️ Blueprint generation failed, falling back to old generator...")
+                blueprint = generate_blueprint(niche, business_name, rating, reviews, photo_path, feedback)
+            
+            if not blueprint:
+                print("  ⚠️ Both generators failed")
                 if best_blueprint:
                     blueprint = best_blueprint
                 else:
                     break
             
             blueprint["_niche"] = niche  # for photo ID resolution
-            blueprint = normalize_blueprint(blueprint)  # resolve photo IDs → file paths BEFORE compositing
-            comp_count = len(blueprint.get("composition", []))
+            # Only normalize if using old-style composition (not dramatic layout)
+            if not blueprint.get("dramaticLayout"):
+                blueprint = normalize_blueprint(blueprint)  # resolve photo IDs → file paths BEFORE compositing
+            
             pattern = blueprint.get("designPattern", "unknown")
-            print(f"  ✓ Pattern: {pattern}, Components: {comp_count}")
-            for block in blueprint.get("composition", []):
-                print(f"    • {block.get('component', '?')}: {block.get('id', '?')}")
+            layout = blueprint.get("dramaticLayout", "none")
+            comp_count = len(blueprint.get("composition", []))
+            print(f"  ✓ Pattern: {pattern}, Layout: {layout}, Components: {comp_count}")
+            if layout == "none":
+                for block in blueprint.get("composition", []):
+                    print(f"    • {block.get('component', '?')}: {block.get('id', '?')}")
             
             best_blueprint = blueprint
             time.sleep(2)
             
-            # Step 1.5: Photo compositing + enhancement (NEW)
-            print("  [1.5] Processing photos...")
-            from photo_compositor import composite_photos
-            from photo_enhancer import enhance_photo
-            ad_id = f"{niche}_iter{iteration}"
+            # Step 1.5: Photo compositing + enhancement (skip for dramatic layouts)
+            if not blueprint.get("dramaticLayout"):
+                print("  [1.5] Processing photos...")
+                from photo_compositor import composite_photos
+                from photo_enhancer import enhance_photo
+                ad_id = f"{niche}_iter{iteration}"
 
             for block in blueprint.get("composition", []):
                 comp = block.get("component", "")
