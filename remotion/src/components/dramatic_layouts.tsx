@@ -642,8 +642,8 @@ export const BoldPoster: React.FC<DramaticProps> = ({
       {/* Kicker — top, LEFT side only (avoid photo area) */}
       {kicker && (
         <div style={{
-          position: 'absolute', top: 60, left: 50, right: 540,
-          fontSize: 24, fontWeight: 700, color: c.accent,
+          position: 'absolute', top: 50, left: 50, right: 680,
+          fontSize: 22, fontWeight: 700, color: c.accent,
           direction: rtl.direction, textAlign: rtl.textAlign,
           letterSpacing: '0.08em',
         }}>
@@ -651,11 +651,11 @@ export const BoldPoster: React.FC<DramaticProps> = ({
         </div>
       )}
 
-      {/* GIANT headline — LEFT side, constrained width to not overlap photo */}
+      {/* GIANT headline — LEFT side, constrained to not overlap photo */}
       {headline && (
         <div style={{
-          position: 'absolute', top: 110, left: 50, right: 540,
-          fontSize: 64, fontWeight: 900, color: c.text,
+          position: 'absolute', top: 90, left: 50, right: 680,
+          fontSize: 56, fontWeight: 900, color: c.text,
           lineHeight: 1.1, direction: rtl.direction, textAlign: rtl.textAlign,
           fontFamily: FONTS.kufi,
           textShadow: `0 0 60px ${hexRgba(c.accent, '0.3')}`,
@@ -667,8 +667,8 @@ export const BoldPoster: React.FC<DramaticProps> = ({
       {/* Business name — below headline, accent color */}
       {businessName && (
         <div style={{
-          position: 'absolute', top: 290, left: 50, right: 540,
-          fontSize: 32, fontWeight: 800,
+          position: 'absolute', top: 250, left: 50, right: 680,
+          fontSize: 30, fontWeight: 800,
           color: c.accentGlint || c.accent,
           direction: rtl.direction, textAlign: rtl.textAlign,
         }}>
@@ -676,11 +676,11 @@ export const BoldPoster: React.FC<DramaticProps> = ({
         </div>
       )}
 
-      {/* Photo — large rectangle, RIGHT side */}
+      {/* Photo — LARGE rectangle, RIGHT side, dominant */}
       {photoPath && (
         <div style={{
-          position: 'absolute', top: 80, right: 50,
-          width: 440, height: 400, borderRadius: 20,
+          position: 'absolute', top: 50, right: 30,
+          width: 620, height: 520, borderRadius: 24,
           overflow: 'hidden',
           border: `5px solid ${c.accent}`,
           boxShadow: depthShadow('floating'),
@@ -696,13 +696,13 @@ export const BoldPoster: React.FC<DramaticProps> = ({
       {/* Taglines — below business name, LEFT side */}
       {taglines.length > 0 && (
         <div style={{
-          position: 'absolute', top: 510, left: 50, right: 540,
-          display: 'flex', flexDirection: 'column', gap: 12,
+          position: 'absolute', top: 340, left: 50, right: 680,
+          display: 'flex', flexDirection: 'column', gap: 14,
           direction: rtl.direction, textAlign: rtl.textAlign,
         }}>
           {taglines.slice(0, 3).map((tag, i) => (
             <div key={i} style={{
-              fontSize: 24, fontWeight: 600, color: c.text,
+              fontSize: 22, fontWeight: 600, color: c.text,
               display: 'flex', alignItems: 'center', gap: 12,
               flexDirection: rtl.direction === 'rtl' ? 'row-reverse' : 'row',
             }}>
